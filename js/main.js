@@ -1,4 +1,5 @@
 "use strict";
+// Lautre · © 2026 Prajwal Vilas Urkude. All rights reserved.
 // =================== MAIN LOOP ===================
 let last = performance.now();
 let liveT = 0;
@@ -33,6 +34,7 @@ function step(now) {
   if (flashFx > 0) flashFx -= dt;
   if (blitzCd > 0) blitzCd -= dt;
   engineUpdate(P.onFoot ? 0 : skidLevel);
+  musicUpdate(dt);
   if (toastT > 0) {
     toastT -= dt;
     if (toastT <= 0) $("toast").classList.remove("show");
@@ -57,7 +59,7 @@ function step(now) {
     liveT -= dt;
     if (liveT <= 0) {
       liveT = 1;
-      $("liveTxt").textContent = clockStr() + " · " + (weather.rain ? tx("Rain", "Regen") : tx("Clear", "Klar"));
+      updateLiveBadge();
     }
   } else {
     const q = pos();
@@ -103,6 +105,22 @@ function frame(now) {
     if (errCount++ < 5) console.error(e);
   }
   requestAnimationFrame(frame);
+}
+
+/** "Live" badge: the real local time in Kaiserslautern (not the game clock). */
+function updateLiveBadge() {
+  let t;
+  try {
+    t = new Intl.DateTimeFormat(SETTINGS.lang === "de" ? "de-DE" : "en-GB", {
+      timeZone: "Europe/Berlin",
+      hour: "2-digit",
+      minute: "2-digit",
+    }).format(new Date());
+  } catch (e) {
+    t = new Date().toTimeString().slice(0, 5);
+  }
+  $("liveTxt").textContent = "Lautern " + t;
+  $("liveBadge").title = tx("Local time in Kaiserslautern", "Ortszeit in Kaiserslautern");
 }
 
 // =================== START ===================
@@ -167,6 +185,7 @@ $("reset").addEventListener("click", () => {
 document.body.classList.add(coarse ? "touch" : "kbd");
 let hasSave = load();
 refreshLanding();
+updateLiveBadge();
 requestAnimationFrame(frame);
 
 // Offline support + installable app (only when served over http/https)
@@ -175,3 +194,10 @@ if ("serviceWorker" in navigator && /^https?:$/.test(location.protocol)) {
     navigator.serviceWorker.register("sw.js").catch(() => {});
   });
 }
+
+// a quiet signature for the curious
+console.log(
+  "%cLautre%c  A game by Prajwal Vilas Urkude · © 2026",
+  "font:700 16px 'Barlow Condensed',sans-serif;color:#141414;background:#f2c230;padding:2px 8px;border-radius:3px",
+  "color:#a9b5a6",
+);

@@ -133,6 +133,7 @@ const I18N = {
   mainMenu: { en: "Main menu", de: "Hauptmenü" },
   language: { en: "Language", de: "Sprache" },
   sound: { en: "Sound", de: "Ton" },
+  music: { en: "Music", de: "Musik" },
   quality: { en: "Graphics", de: "Grafik" },
   qHigh: { en: "High", de: "Hoch" },
   qLow: { en: "Fast", de: "Schnell" },
@@ -143,6 +144,33 @@ const I18N = {
   tabCodes: { en: "Codes", de: "Codes" },
   tabMe: { en: "Me", de: "Ich" },
   live: { en: "Live", de: "Live" },
+  aGameBy: { en: "A game by", de: "Ein Spiel von" },
+  createdBy: {
+    en: "Created, designed & developed by",
+    de: "Idee, Design & Entwicklung",
+  },
+  rights: { en: "All rights reserved.", de: "Alle Rechte vorbehalten." },
+  credits: { en: "Credits", de: "Credits" },
+  crSetting: { en: "Setting", de: "Schauplatz" },
+  crSettingV: {
+    en: "Kaiserslautern (“Lautre”), Rhineland-Palatinate, lovingly stylised",
+    de: "Kaiserslautern („Lautre“), Rheinland-Pfalz, liebevoll stilisiert",
+  },
+  crType: { en: "Typefaces", de: "Schriften" },
+  crTypeV: {
+    en: "SIL Open Font License, via Google Fonts",
+    de: "SIL Open Font License, über Google Fonts",
+  },
+  crSound: { en: "Music & sound", de: "Musik & Ton" },
+  crSoundV: {
+    en: "Generative music and sound, composed live in your browser with the Web Audio API",
+    de: "Generative Musik und Klänge, live im Browser komponiert mit der Web Audio API",
+  },
+  crThanks: { en: "Thanks", de: "Dank" },
+  crThanksV: {
+    en: "To everyone who has ever waited for the RE 4, and to the Betze for singing anyway.",
+    de: "An alle, die je auf den RE 4 gewartet haben, und an den Betze, der trotzdem singt.",
+  },
   rotate: {
     en: "Tip: turn your phone sideways for a wider view.",
     de: "Tipp: Handy quer halten für mehr Überblick.",

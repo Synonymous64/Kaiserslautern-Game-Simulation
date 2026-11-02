@@ -1,5 +1,5 @@
 /* Lautre service worker: network-first, falls back to cache when offline. */
-const VERSION = "lautre-v2.0.0";
+const VERSION = "lautre-v2.2.0";
 const CORE = [
   "./",
   "index.html",
@@ -17,6 +17,7 @@ const CORE = [
   "js/world/vehicles.js",
   "js/core/state.js",
   "js/systems/audio.js",
+  "js/systems/music.js",
   "js/data/text.js",
   "js/data/missions.js",
   "js/systems/missions.js",

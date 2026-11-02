@@ -1,7 +1,7 @@
 {
   "name": "Lautre · A Kaiserslautern City Game",
   "short_name": "Lautre",
-  "description": "An open-city browser game set in Kaiserslautern. English & Deutsch.",
+  "description": "An open-city browser game set in Kaiserslautern by Prajwal Vilas Urkude. English & Deutsch.",
   "start_url": "./",
   "scope": "./",
   "display": "fullscreen",

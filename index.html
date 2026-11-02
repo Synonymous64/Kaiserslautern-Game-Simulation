@@ -1,4 +1,8 @@
 <!doctype html>
+<!--
+  Lautre · A Kaiserslautern City Game
+  © 2026 Prajwal Vilas Urkude. All rights reserved.
+-->
 <html lang="en">
   <head>
     <meta charset="utf-8" />
@@ -11,6 +15,8 @@
       name="description"
       content="An open-city browser game set in Kaiserslautern. Deliver food, drive taxi, dodge the Ordnungsamt and make kickoff on the Betzenberg. Plays in English and German, on desktop and mobile."
     />
+    <meta name="author" content="Prajwal Vilas Urkude" />
+    <meta name="copyright" content="© 2026 Prajwal Vilas Urkude. All rights reserved." />
     <meta name="theme-color" content="#0b1611" />
     <meta name="color-scheme" content="dark" />
     <meta name="mobile-web-app-capable" content="yes" />
@@ -177,6 +183,38 @@
           <button class="btn" id="pResume" type="button" data-i18n="resume">Resume</button>
           <button class="btn ghost" id="pMenu" type="button" data-i18n="mainMenu">Main menu</button>
         </div>
+        <div class="legal">
+          <span>© 2026 Prajwal Vilas Urkude</span>
+          <button class="linkbtn" id="pCredits" type="button" data-i18n="credits">Credits</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- =================== CREDITS =================== -->
+    <div id="credits" class="overlay" hidden>
+      <div class="card creditscard" role="dialog" aria-modal="true" aria-labelledby="crT">
+        <div class="mc-kicker" data-i18n="credits">Credits</div>
+        <div class="signature big">
+          <span class="sig-kicker" data-i18n="createdBy">Created, designed &amp; developed by</span>
+          <span class="sig-name" id="crT">Prajwal Vilas Urkude</span>
+        </div>
+        <dl class="credit-list">
+          <dt data-i18n="crSetting">Setting</dt>
+          <dd data-i18n="crSettingV">Kaiserslautern (“Lautre”), Rhineland-Palatinate, lovingly stylised</dd>
+          <dt data-i18n="crType">Typefaces</dt>
+          <dd>Barlow Condensed · Atkinson Hyperlegible · IBM Plex Mono <small data-i18n="crTypeV">SIL Open Font License, via Google Fonts</small></dd>
+          <dt data-i18n="crSound">Music &amp; sound</dt>
+          <dd data-i18n="crSoundV">Generative music and sound, composed live in your browser with the Web Audio API</dd>
+          <dt data-i18n="crThanks">Thanks</dt>
+          <dd data-i18n="crThanksV">To everyone who has ever waited for the RE 4, and to the Betze for singing anyway.</dd>
+        </dl>
+        <p class="foot" data-i18n="foot"></p>
+        <div class="legal">
+          <span>© 2026 Prajwal Vilas Urkude · <span data-i18n="rights">All rights reserved.</span></span>
+        </div>
+        <div class="mc-actions">
+          <button class="btn gold" id="crClose" type="button" data-i18n="close">Close</button>
+        </div>
       </div>
     </div>
 
@@ -271,7 +309,17 @@
             <div class="settings" id="settingsStart"></div>
           </article>
 
-          <p class="foot" data-i18n="foot"></p>
+          <footer class="credits-foot">
+            <div class="signature">
+              <span class="sig-kicker" data-i18n="aGameBy">A game by</span>
+              <span class="sig-name">Prajwal Vilas Urkude</span>
+            </div>
+            <p class="foot" data-i18n="foot"></p>
+            <div class="legal">
+              <span>© 2026 Prajwal Vilas Urkude · <span data-i18n="rights">All rights reserved.</span></span>
+              <button class="linkbtn" id="creditsBtn" type="button" data-i18n="credits">Credits</button>
+            </div>
+          </footer>
         </section>
       </div>
     </div>
@@ -284,6 +332,7 @@
     <script src="js/world/vehicles.js"></script>
     <script src="js/core/state.js"></script>
     <script src="js/systems/audio.js"></script>
+    <script src="js/systems/music.js"></script>
     <script src="js/data/text.js"></script>
     <script src="js/data/missions.js"></script>
     <script src="js/systems/missions.js"></script>

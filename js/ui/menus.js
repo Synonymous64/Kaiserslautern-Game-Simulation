@@ -70,6 +70,10 @@ function renderSettings() {
         audio();
         setSound(v);
       }),
+      segRow(tr(I18N.music), [[true, tr(I18N.on)], [false, tr(I18N.off)]], MUSIC.on, (v) => {
+        audio();
+        setMusic(v);
+      }),
       segRow(tr(I18N.quality), [["high", tr(I18N.qHigh)], ["low", tr(I18N.qLow)]], SETTINGS.quality, (v) => {
         SETTINGS.quality = v;
         saveSettings();
@@ -182,6 +186,9 @@ function showFinale() {
     [tx("Cheats", "Cheats"), cheated ? tx("yes", "ja") : tx("no", "nein")],
   ]) s.append(el("span", null, a), el("span", null, String(b)));
   body.push(s);
+  const sig = el("div", "signature big");
+  sig.append(el("span", "sig-kicker", tx("A game by", "Ein Spiel von")), el("span", "sig-name", "Prajwal Vilas Urkude"));
+  body.push(sig);
   showCard({
     kicker: tx("Chapter 1 complete", "Kapitel 1 geschafft"),
     title: tx("Welcome home, Lautre", "Willkommen daheim, Lautre"),
@@ -193,3 +200,35 @@ function showFinale() {
     actions: [{ label: tx("Keep playing", "Weiterspielen"), cls: "gold", fn: () => {} }],
   });
 }
+
+// ---------- credits ----------
+let creditsReturn = null;
+function openCredits() {
+  creditsReturn = document.activeElement;
+  applyI18n($("credits"));
+  $("credits").hidden = false;
+  $("crClose").focus({ preventScroll: true });
+}
+function closeCredits() {
+  $("credits").hidden = true;
+  if (creditsReturn && creditsReturn.focus) creditsReturn.focus({ preventScroll: true });
+}
+$("creditsBtn").addEventListener("click", openCredits);
+$("pCredits").addEventListener("click", openCredits);
+$("crClose").addEventListener("click", closeCredits);
+$("credits").addEventListener("click", (e) => {
+  if (e.target === $("credits")) closeCredits();
+});
+// Esc / Enter close the credits before the game sees the key
+addEventListener(
+  "keydown",
+  (e) => {
+    if ($("credits").hidden) return;
+    if (e.key === "Escape" || e.key === "Enter") {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      closeCredits();
+    }
+  },
+  true,
+);

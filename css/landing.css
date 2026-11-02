@@ -443,3 +443,85 @@
     display: none;
   }
 }
+
+/* ---------- credits & copyright ---------- */
+.credits-foot {
+  display: grid;
+  gap: 12px;
+  margin-top: 6px;
+  padding: 18px 4px 4px;
+  border-top: 1px solid var(--line);
+}
+.signature {
+  display: grid;
+  gap: 2px;
+}
+.sig-kicker {
+  font-family: var(--f-display);
+  font-weight: 600;
+  font-size: 12px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.sig-name {
+  position: relative;
+  justify-self: start;
+  font-family: var(--f-display);
+  font-weight: 600;
+  font-size: 26px;
+  letter-spacing: 0.03em;
+  line-height: 1.1;
+  padding-bottom: 6px;
+  color: var(--ink);
+}
+.sig-name::after {
+  /* fine gold rule under the name */
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 64px;
+  height: 2px;
+  border-radius: 1px;
+  background: linear-gradient(90deg, var(--sign), rgba(242, 194, 48, 0));
+}
+.signature.big {
+  justify-items: center;
+  text-align: center;
+  padding: 6px 0 4px;
+}
+.signature.big .sig-name {
+  justify-self: center;
+  font-size: clamp(30px, 7vw, 40px);
+}
+.signature.big .sig-name::after {
+  left: 50%;
+  width: 96px;
+  transform: translateX(-50%);
+  background: linear-gradient(90deg, rgba(242, 194, 48, 0), var(--sign), rgba(242, 194, 48, 0));
+}
+.legal {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px 14px;
+  font-size: 12px;
+  color: var(--muted);
+}
+.linkbtn {
+  background: none;
+  border: 0;
+  padding: 4px 0;
+  font-family: var(--f-display);
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--sign);
+  border-bottom: 1px solid rgba(242, 194, 48, 0.35);
+}
+.linkbtn:hover {
+  border-bottom-color: var(--sign);
+}

@@ -11,6 +11,7 @@ Ordnungsamt and make kickoff on the Betzenberg.
   context-aware buttons on touch screens
 - Day/night cycle, weather and wet roads, traffic lights, a speed camera,
   drifting, engine sound
+- A calm generative soundtrack that follows the time of day and the weather
 - Static files only: no build step, no backend, no dependencies
 
 ## Play locally
@@ -90,4 +91,15 @@ written as `L2("English", "Deutsch")`.
 | Phone / map / pause | P / M / Esc | top-right buttons |
 | Dialogue choice | 1 / 2 | tap |
 
+## Credits
+
+Created, designed and developed by **Prajwal Vilas Urkude**.
+
+- Typefaces: Barlow Condensed, Atkinson Hyperlegible, IBM Plex Mono (SIL Open Font License, via Google Fonts)
+- Sound: synthesised in the browser with the Web Audio API
+
 All shops and people are fiction; the street layout is stylised.
+
+## Copyright
+
+© 2026 Prajwal Vilas Urkude. All rights reserved. See [LICENSE](LICENSE).

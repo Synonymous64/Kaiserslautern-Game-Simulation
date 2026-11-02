@@ -2,6 +2,8 @@
   "name": "lautre",
   "version": "2.0.0",
   "private": true,
+  "author": "Prajwal Vilas Urkude",
+  "license": "SEE LICENSE IN LICENSE",
   "description": "Lautre: an open-city browser game set in Kaiserslautern (EN/DE, desktop + mobile).",
   "scripts": {
     "start": "npx --yes serve -l 8080 .",
