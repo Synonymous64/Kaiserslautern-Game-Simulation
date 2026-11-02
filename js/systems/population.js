@@ -52,7 +52,7 @@ function walkableP(x, y) {
 function updatePeds(dt) {
   const q = state === "title" ? cam : pos();
   const night = darkness() > 0.4;
-  const want = Math.round((matchday ? 75 : 55) * (night ? 0.45 : 1) * (weather.rain ? 0.75 : 1));
+  const want = Math.round((matchday ? 75 : 55) * (night ? 0.45 : 1) * (weather.rain ? 0.75 : 1) * (SETTINGS.quality === "low" ? 0.7 : 1));
   for (let i = peds.length - 1; i >= 0; i--) {
     const p = peds[i];
     if (Math.hypot(p.x - q.x, p.y - q.y) > T * 32) {

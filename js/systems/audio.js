@@ -3,6 +3,16 @@
 let AC = null,
   soundOn = SETTINGS.sound,
   rainNode = null;
+// Every sound goes through one master gain, so Sound On/Off is instant.
+let masterOut = null;
+function OUT() {
+  if (!masterOut) {
+    masterOut = AC.createGain();
+    masterOut.gain.value = soundOn ? 1 : 0;
+    masterOut.connect(AC.destination);
+  }
+  return masterOut;
+}
 function audio() {
   if (!AC) {
     try {
@@ -22,7 +32,7 @@ function tone(f, d, type = "sine", vol = 0.12, f2) {
   g.gain.setValueAtTime(vol, AC.currentTime);
   g.gain.exponentialRampToValueAtTime(0.0001, AC.currentTime + d);
   o.connect(g);
-  g.connect(AC.destination);
+  g.connect(OUT());
   o.start();
   o.stop(AC.currentTime + d + 0.02);
 }
@@ -79,7 +89,7 @@ function rainSound(on) {
     g.gain.value = 0.05;
     s.connect(f);
     f.connect(g);
-    g.connect(AC.destination);
+    g.connect(OUT());
     s.start();
     rainNode = s;
   } else if ((!on || !soundOn) && rainNode) {
@@ -113,7 +123,7 @@ function noiseBurst(dur, freq, vol) {
   g.gain.exponentialRampToValueAtTime(0.0001, AC.currentTime + dur);
   s.connect(f);
   f.connect(g);
-  g.connect(AC.destination);
+  g.connect(OUT());
   s.start();
   s.stop(AC.currentTime + dur + 0.05);
 }
@@ -141,7 +151,7 @@ function engineUpdate(skid) {
     g.gain.value = 0;
     o.connect(f);
     f.connect(g);
-    g.connect(AC.destination);
+    g.connect(OUT());
     o.start();
     const n = AC.createBufferSource(),
       nf = AC.createBiquadFilter(),
@@ -154,7 +164,7 @@ function engineUpdate(skid) {
     ng.gain.value = 0;
     n.connect(nf);
     nf.connect(ng);
-    ng.connect(AC.destination);
+    ng.connect(OUT());
     n.start();
     eng = { o, f, g, ng, wave: "" };
   }
@@ -185,11 +195,23 @@ function engineUpdate(skid) {
 document.addEventListener("visibilitychange", () => {
   if (!AC) return;
   if (document.hidden) AC.suspend();
-  else if (state !== "title" || soundOn) AC.resume();
+  else AC.resume();
 });
 function setSound(on) {
   soundOn = on;
   SETTINGS.sound = on;
   saveSettings();
+  if (AC) {
+    if (AC.state === "suspended") AC.resume();
+    const g = OUT().gain,
+      t = AC.currentTime;
+    g.cancelScheduledValues(t);
+    g.setValueAtTime(g.value, t);
+    g.linearRampToValueAtTime(on ? 1 : 0, t + 0.08);
+  }
   rainSound(weather.rain && state !== "title");
+  if (on) {
+    sfx.ok(); // audible confirmation
+    musicKick();
+  }
 }

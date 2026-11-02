@@ -91,12 +91,10 @@ function openPause() {
   state = "pause";
   renderSettings();
   $("pause").hidden = false;
-  if (AC) AC.suspend();
 }
 function closePause() {
   $("pause").hidden = true;
   if (state === "pause") state = "play";
-  if (AC && soundOn) AC.resume();
   resumeDialog();
 }
 $("pResume").addEventListener("click", closePause);
@@ -115,7 +113,6 @@ function backToMenu() {
   save();
   for (const id of ["dialog", "phone", "bigmap", "mcard", "hud", "touch"]) $(id).hidden = true;
   state = "title";
-  if (AC) AC.resume();
   rainSound(false);
   refreshLanding();
   $("start").hidden = false;

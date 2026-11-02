@@ -32,8 +32,10 @@ function drawBuildings(x0, y0, x1, y1) {
         ctx.fillRect(px, py, T + 0.6, 3);
       }
       // roof tiling texture
-      ctx.fillStyle = "rgba(0,0,0,.06)";
+      if (SETTINGS.quality !== "low") {
+        ctx.fillStyle = "rgba(0,0,0,.06)";
       for (let k = 4; k < T; k += 6) ctx.fillRect(px, py + k, T + 0.6, 1);
+      }
       if (!isBld(x, y + 1)) {
         // south facade with a row of windows (camera looks slightly north)
         ctx.fillStyle = c.lo;

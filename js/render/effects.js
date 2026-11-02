@@ -125,7 +125,7 @@ function emitTyres(v, intensity) {
 // ---- smoke / spray ----
 const smoke = [];
 function puff(x, y, vx, vy, life, r, col) {
-  if (smoke.length > 280) return;
+  if (smoke.length > (SETTINGS.quality === "low" ? 70 : 280)) return;
   smoke.push({ x, y, vx, vy, t: life, life, r, col });
 }
 function updateSmoke(dt) {
@@ -314,9 +314,14 @@ function drawGrade() {
     ctx.fillRect(0, 0, W, H);
   };
   tint("255,140,170", 0.1 * bell(5, 7.6)); // dawn
-  tint("255,236,190", 0.045 * bell(10, 16)); // midday warmth
+  const hq = SETTINGS.quality !== "low";
+  if (hq)   tint("255,236,190", 0.045 * bell(10, 16)); // midday warmth
   tint("255,120,50", 0.14 * bell(17.3, 20.6)); // golden hour / dusk
   tint("60,74,96", 0.12 * weather.wet); // overcast, wet
+  if (!hq) {
+    if (flashFx > 0) tint("255,255,255", Math.min(0.85, flashFx * 3));
+    return; // fast mode: no vignette
+  }
   if (!vignette || vigW !== W || vigH !== H) {
     vigW = W;
     vigH = H;

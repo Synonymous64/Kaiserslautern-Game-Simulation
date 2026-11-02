@@ -63,7 +63,7 @@ function ensureMusic() {
   verb.connect(wet);
   dry.connect(master);
   wet.connect(master);
-  master.connect(AC.destination);
+  master.connect(OUT());
   Object.assign(MUSIC, { master, tone, bus, next: AC.currentTime + 0.3 });
   return true;
 }
@@ -156,7 +156,8 @@ function musicUpdate(dt) {
   if (!target && !MUSIC.master) return; // never started, nothing to fade
   if (!ensureMusic()) return;
   const now = AC.currentTime;
-  MUSIC.master.gain.setTargetAtTime(target * 0.55, now, 0.9);
+  // fade out quickly when switched off, swell in gently otherwise
+  MUSIC.master.gain.setTargetAtTime(target * 0.55, now, target ? 0.9 : 0.12);
   MUSIC.night = darkness() > 0.3;
   const bright = (MUSIC.night ? 1500 : 2600) * (weather.rain ? 0.5 : 1);
   MUSIC.tone.frequency.setTargetAtTime(bright, now, 1.5);
@@ -186,6 +187,24 @@ function setMusic(on) {
   MUSIC.on = on;
   SETTINGS.music = on;
   saveSettings();
+  if (AC && AC.state === "suspended") AC.resume();
+  if (on) musicKick();
+  else if (MUSIC.master) {
+    const t = AC.currentTime;
+    MUSIC.master.gain.cancelScheduledValues(t);
+    MUSIC.master.gain.setTargetAtTime(0, t, 0.12);
+  }
+}
+/** Start a chord and a bell right now, so turning music on is heard at once. */
+function musicKick() {
+  if (!AC || !MUSIC.on || !soundOn || !ensureMusic()) return;
+  const t = AC.currentTime;
+  MUSIC.master.gain.cancelScheduledValues(t);
+  MUSIC.master.gain.setTargetAtTime((state === "title" ? 1 : 0.62) * 0.55, t, 0.25);
+  MUSIC.next = t;
+  MUSIC.bellT = 0;
+  if (MUSIC.cur) playBell(MUSIC.cur, t + 0.03);
+  else MUSIC.cur = (darkness() > 0.3 ? PROG_NIGHT : PROG_DAY)[0];
 }
 
 // Browsers only allow audio after a gesture: the first tap/key on the landing

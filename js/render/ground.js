@@ -8,7 +8,7 @@ let W = 0,
   H = 0,
   DPR = 1;
 function resize() {
-  DPR = Math.min(SETTINGS.quality === "low" ? 1.25 : 2, window.devicePixelRatio || 1);
+  DPR = Math.min(SETTINGS.quality === "low" ? 1 : 2, window.devicePixelRatio || 1);
   W = innerWidth;
   H = innerHeight;
   cv.width = Math.round(W * DPR);
@@ -128,7 +128,7 @@ function drawTiles(x0, y0, x1, y1) {
         ctx.fillStyle = `rgba(12,22,38,${(0.2 * weather.wet).toFixed(3)})`;
         ctx.fillRect(px, py, T + 0.6, T + 0.6);
         const ph = hash(x + 11, y + 5);
-        if (ph > 0.86) {
+        if (ph > 0.86 && SETTINGS.quality !== "low") {
           const cx = px + 8 + ph * 14,
             cy = py + 8 + hash(y, x + 3) * 14;
           ctx.fillStyle = `rgba(150,170,195,${(0.3 * weather.wet).toFixed(3)})`;

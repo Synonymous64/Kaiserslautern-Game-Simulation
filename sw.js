@@ -1,5 +1,5 @@
 /* Lautre service worker: network-first, falls back to cache when offline. */
-const VERSION = "lautre-v2.2.0";
+const VERSION = "lautre-v2.2.1";
 const CORE = [
   "./",
   "index.html",
