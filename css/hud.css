@@ -1,0 +1,420 @@
+/* =========================================================
+   In-game HUD (responsive grid; no overlaps in portrait or landscape)
+   ========================================================= */
+.hud {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  font-size: 14px;
+}
+.hud button {
+  pointer-events: auto;
+}
+.hud-top {
+  position: absolute;
+  top: calc(10px + var(--sat));
+  left: calc(10px + var(--sal));
+  right: calc(10px + var(--sar));
+  display: grid;
+  grid-template-columns: minmax(170px, auto) minmax(0, 1fr) auto;
+  grid-template-areas: "status obj right";
+  gap: var(--gap);
+  align-items: start;
+}
+
+/* ---------- status ---------- */
+.status {
+  grid-area: status;
+  padding: 10px 12px;
+  display: grid;
+  gap: 5px;
+  min-width: 170px;
+}
+.status-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  font-variant-numeric: tabular-nums;
+}
+.status-row.sub {
+  font-size: 12.5px;
+  color: var(--muted);
+}
+.money {
+  font-family: var(--f-mono);
+  font-weight: 600;
+  font-size: 22px;
+  color: var(--good);
+  transition: color 0.3s;
+}
+.money.flash-up {
+  color: #b9ffbf;
+}
+.money.flash-down {
+  color: var(--red-lt);
+}
+.clock {
+  font-family: var(--f-mono);
+  color: var(--ink);
+}
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(47, 143, 74, 0.25);
+  border: 1px solid rgba(127, 207, 138, 0.35);
+  font-size: 12px;
+  font-weight: 700;
+  color: #bfe8c5;
+  white-space: nowrap;
+}
+.energy {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--muted);
+}
+.bar {
+  height: 6px;
+  border-radius: 3px;
+  background: rgba(244, 239, 230, 0.14);
+  overflow: hidden;
+  flex: 1;
+  min-width: 40px;
+}
+.bar > i {
+  display: block;
+  height: 100%;
+  width: 50%;
+  background: var(--sign);
+  border-radius: 3px;
+  transition:
+    width 0.25s,
+    background 0.25s;
+}
+
+/* ---------- objective ---------- */
+.obj {
+  grid-area: obj;
+  justify-self: center;
+  width: min(440px, 100%);
+  padding: 10px 14px 11px;
+  display: grid;
+  gap: 3px;
+  border-top: 3px solid var(--sign);
+  animation: objIn 0.35s ease-out;
+}
+@keyframes objIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+}
+.obj-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+.obj-kicker {
+  font-family: var(--f-display);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 12.5px;
+  color: var(--sign);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.obj h3 {
+  margin: 0;
+  font-size: 15.5px;
+  line-height: 1.3;
+}
+.obj p {
+  margin: 0;
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.35;
+}
+.obj p:empty {
+  display: none;
+}
+.obj-extra {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+  font-size: 12.5px;
+  color: var(--muted);
+}
+.timer {
+  font-family: var(--f-mono);
+  font-weight: 600;
+  font-size: 18px;
+  color: var(--sign);
+  font-variant-numeric: tabular-nums;
+}
+.timer.low {
+  color: var(--red-lt);
+  animation: blink 0.8s steps(2) infinite;
+}
+@keyframes blink {
+  50% {
+    opacity: 0.45;
+  }
+}
+.checks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+}
+.checks span::before {
+  content: "○ ";
+}
+.checks span.ok {
+  color: var(--good);
+}
+.checks span.ok::before {
+  content: "● ";
+}
+
+/* ---------- right column: buttons, minimap, wanted ---------- */
+.hud-right {
+  grid-area: right;
+  display: grid;
+  justify-items: end;
+  gap: 8px;
+}
+.hud-btns {
+  display: flex;
+  gap: 6px;
+}
+#mini {
+  width: 192px;
+  height: 144px;
+  border-radius: 14px;
+  border: 1px solid var(--line-hi);
+  background: #24412d;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+}
+.aerger {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  padding: 7px 10px;
+  border-color: rgba(239, 141, 114, 0.4);
+}
+.pips {
+  display: flex;
+  gap: 3px;
+}
+.pips i {
+  width: 12px;
+  height: 12px;
+  border-radius: 2px;
+  background: rgba(244, 239, 230, 0.18);
+  transform: skewX(-12deg);
+}
+.pips i.on {
+  background: var(--red);
+  box-shadow: 0 0 8px rgba(239, 141, 114, 0.8);
+}
+.alabel {
+  font-family: var(--f-display);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-size: 14px;
+  color: var(--red-lt);
+}
+
+/* ---------- vehicle / hint box ---------- */
+.vehbox {
+  position: absolute;
+  left: calc(10px + var(--sal));
+  bottom: calc(10px + var(--sab));
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 14px 8px 8px;
+  max-width: min(420px, calc(100vw - 230px));
+}
+.gauge {
+  --p: 0;
+  flex: none;
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  display: grid;
+  place-content: center;
+  text-align: center;
+  background:
+    radial-gradient(closest-side, var(--panel-solid) 76%, transparent 78%),
+    conic-gradient(
+      from 225deg,
+      var(--gc, var(--good)) 0deg calc(var(--p) * 270deg),
+      rgba(244, 239, 230, 0.13) 0deg 270deg,
+      transparent 0deg
+    );
+}
+.gauge span {
+  font-family: var(--f-mono);
+  font-weight: 600;
+  font-size: 17px;
+  line-height: 1;
+}
+.gauge small {
+  font-size: 9px;
+  color: var(--muted);
+}
+.vehbox.foot .gauge {
+  display: none;
+}
+.vehbox.foot {
+  padding-left: 14px;
+}
+.veh {
+  font-family: var(--f-display);
+  font-weight: 700;
+  font-size: 18px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.hint {
+  font-size: 13px;
+  color: var(--ink);
+}
+.hint b {
+  color: var(--sign);
+  font-family: var(--f-mono);
+}
+
+/* ---------- toast + cheat flash ---------- */
+#toast {
+  position: absolute;
+  left: 50%;
+  bottom: calc(96px + var(--sab));
+  transform: translate(-50%, 10px);
+  background: var(--panel-solid);
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--sign);
+  padding: 9px 14px;
+  border-radius: 10px;
+  font-size: 14px;
+  width: max-content;
+  max-width: min(460px, calc(100vw - 32px));
+  box-shadow: var(--shadow);
+  opacity: 0;
+  transition:
+    opacity 0.25s,
+    transform 0.25s;
+}
+#toast.show {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+#cheatflash {
+  position: absolute;
+  left: 50%;
+  top: 42%;
+  transform: translate(-50%, -50%) scale(0.95);
+  background: var(--sign);
+  color: var(--sign-ink);
+  font-family: var(--f-display);
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 10px 18px;
+  border: 3px solid var(--sign-ink);
+  outline: 4px solid var(--sign);
+  font-size: 22px;
+  text-align: center;
+  opacity: 0;
+  transition:
+    opacity 0.3s,
+    transform 0.3s;
+}
+#cheatflash.show {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
+}
+#cheatflash small {
+  display: block;
+  font-family: var(--f-body);
+  font-weight: 700;
+  font-size: 13px;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+/* ---------- narrow / portrait ---------- */
+@media (max-width: 760px) {
+  .hud-top {
+    grid-template-columns: minmax(0, auto) minmax(0, 1fr);
+    grid-template-areas:
+      "status right"
+      "obj obj";
+  }
+  .status {
+    min-width: 0;
+    padding: 8px 10px;
+  }
+  .money {
+    font-size: 18px;
+  }
+  #mini {
+    width: 128px;
+    height: 96px;
+  }
+  .obj {
+    width: 100%;
+  }
+  .icon-btn {
+    width: 40px;
+    height: 40px;
+  }
+}
+/* short landscape (phones on their side) */
+@media (max-height: 520px) {
+  .hud-top {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-areas: "status obj right";
+  }
+  .status {
+    padding: 6px 10px;
+    gap: 3px;
+  }
+  .money {
+    font-size: 17px;
+  }
+  #mini {
+    width: 120px;
+    height: 90px;
+  }
+  .obj {
+    padding: 7px 12px;
+  }
+  .obj h3 {
+    font-size: 14px;
+  }
+  .obj p {
+    display: none;
+  }
+  .gauge {
+    width: 48px;
+    height: 48px;
+  }
+  .veh {
+    font-size: 15px;
+  }
+  #toast {
+    bottom: calc(70px + var(--sab));
+  }
+}

@@ -1,0 +1,147 @@
+/* =========================================================
+   Touch controls: floating joystick (left) + thumb buttons (right)
+   ========================================================= */
+#touch {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+}
+#joyZone {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 50%;
+  height: 62%;
+  pointer-events: auto;
+  touch-action: none;
+}
+#joy {
+  position: absolute;
+  left: calc(28px + var(--sal));
+  bottom: calc(28px + var(--sab));
+  width: 132px;
+  height: 132px;
+  margin: 0;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(244, 239, 230, 0.06), rgba(244, 239, 230, 0.12));
+  border: 1.5px solid rgba(244, 239, 230, 0.25);
+  opacity: 0.55;
+  transition: opacity 0.15s;
+}
+#joy.active {
+  opacity: 1;
+  transition: none;
+}
+#knob {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 56px;
+  height: 56px;
+  margin: -28px 0 0 -28px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, rgba(255, 255, 255, 0.6), rgba(244, 239, 230, 0.28));
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+}
+.tbtns {
+  position: absolute;
+  right: calc(18px + var(--sar));
+  bottom: calc(22px + var(--sab));
+  width: 188px;
+  height: 170px;
+  pointer-events: none;
+}
+.tbtns button {
+  position: absolute;
+  pointer-events: auto;
+  touch-action: none;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: rgba(11, 22, 17, 0.72);
+  border: 1.5px solid var(--line-hi);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  font-family: var(--f-display);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-size: 14px;
+  line-height: 1.05;
+  text-align: center;
+  padding: 4px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+}
+.tbtns button:active,
+.tbtns button.held {
+  transform: scale(0.94);
+  background: rgba(244, 239, 230, 0.2);
+}
+.tbtns .main {
+  right: 0;
+  bottom: 0;
+  width: 92px;
+  height: 92px;
+  background: linear-gradient(180deg, var(--red-hi), var(--red));
+  border-color: rgba(255, 255, 255, 0.35);
+  font-size: 16px;
+}
+.tbtns .main.idle {
+  background: rgba(11, 22, 17, 0.72);
+  border-color: var(--line-hi);
+  color: var(--muted);
+}
+#tAlt {
+  right: 104px;
+  bottom: 6px;
+  width: 70px;
+  height: 70px;
+}
+#tHorn {
+  right: 18px;
+  bottom: 104px;
+  width: 62px;
+  height: 62px;
+}
+
+/* HUD adjustments while touch controls are on */
+body.touch .vehbox {
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: calc(10px + var(--sab));
+  max-width: 40vw;
+  padding: 6px 12px 6px 6px;
+}
+body.touch .vehbox .hint {
+  display: none;
+}
+body.touch .vehbox.foot {
+  display: none;
+}
+body.touch #toast {
+  bottom: auto;
+  top: calc(var(--sat) + 50%);
+}
+@media (max-width: 760px) {
+  body.touch .vehbox {
+    bottom: calc(200px + var(--sab));
+    max-width: 60vw;
+  }
+}
+@media (max-height: 520px) {
+  #joy {
+    width: 112px;
+    height: 112px;
+    left: calc(20px + var(--sal));
+    bottom: calc(16px + var(--sab));
+  }
+  .tbtns {
+    bottom: calc(12px + var(--sab));
+    transform: scale(0.88);
+    transform-origin: bottom right;
+  }
+  body.touch #toast {
+    top: auto;
+    bottom: calc(12px + var(--sab));
+  }
+}

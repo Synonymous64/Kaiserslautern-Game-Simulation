@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630">
+  <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#0b1611"/><stop offset="1" stop-color="#3a1a12"/></linearGradient></defs>
+  <rect width="1200" height="630" fill="url(#g)"/>
+  <g transform="rotate(-2 420 260)">
+    <rect x="120" y="120" width="600" height="280" rx="20" fill="#f2c230"/>
+    <rect x="144" y="144" width="552" height="232" rx="8" fill="none" stroke="#141414" stroke-width="14"/>
+    <text x="420" y="300" text-anchor="middle" font-family="Arial Narrow, Arial, sans-serif" font-weight="700" font-size="150" fill="#141414">Lautre</text>
+    <text x="420" y="352" text-anchor="middle" font-family="Arial, sans-serif" font-weight="700" font-size="28" fill="#141414">Kaiserslautern · Chapter 1</text>
+  </g>
+  <text x="120" y="510" font-family="Arial, sans-serif" font-weight="800" font-size="56" fill="#f4efe6">NEW IN TOWN. BROKE. DETERMINED.</text>
+  <text x="120" y="560" font-family="Arial, sans-serif" font-size="28" fill="#a9b5a6">An open-city browser game · English &amp; Deutsch · Desktop &amp; mobile</text>
+</svg>

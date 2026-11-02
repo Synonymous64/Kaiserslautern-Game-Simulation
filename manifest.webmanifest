@@ -1,0 +1,16 @@
+{
+  "name": "Lautre · A Kaiserslautern City Game",
+  "short_name": "Lautre",
+  "description": "An open-city browser game set in Kaiserslautern. English & Deutsch.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "fullscreen",
+  "orientation": "any",
+  "background_color": "#0b1611",
+  "theme_color": "#0b1611",
+  "lang": "en",
+  "icons": [
+    { "src": "assets/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "assets/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "maskable" }
+  ]
+}

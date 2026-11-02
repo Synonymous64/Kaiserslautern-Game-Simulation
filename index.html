@@ -1,0 +1,308 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1,user-scalable=no"
+    />
+    <title>Lautre · A Kaiserslautern City Game</title>
+    <meta
+      name="description"
+      content="An open-city browser game set in Kaiserslautern. Deliver food, drive taxi, dodge the Ordnungsamt and make kickoff on the Betzenberg. Plays in English and German, on desktop and mobile."
+    />
+    <meta name="theme-color" content="#0b1611" />
+    <meta name="color-scheme" content="dark" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Lautre" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Lautre · A Kaiserslautern City Game" />
+    <meta
+      property="og:description"
+      content="New in town, broke, determined. An open-city adventure in your browser."
+    />
+    <meta property="og:image" content="assets/og-image.svg" />
+    <link rel="icon" href="assets/icon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="assets/icon.svg" />
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Atkinson+Hyperlegible:wght@400;700&family=IBM+Plex+Mono:wght@500;600&display=swap"
+    />
+    <link rel="stylesheet" href="css/base.css" />
+    <link rel="stylesheet" href="css/landing.css" />
+    <link rel="stylesheet" href="css/hud.css" />
+    <link rel="stylesheet" href="css/overlays.css" />
+    <link rel="stylesheet" href="css/touch.css" />
+  </head>
+  <body>
+    <canvas id="cv" aria-label="Kaiserslautern city game view"></canvas>
+    <noscript><p class="noscript">Lautre needs JavaScript to run.</p></noscript>
+
+    <!-- =================== HUD =================== -->
+    <div class="hud" id="hud" hidden>
+      <div class="hud-top">
+        <div class="glass status">
+          <div class="status-row">
+            <span class="money" id="hMoney">€20,00</span>
+            <span class="pill" id="hBottles">0</span>
+          </div>
+          <div class="status-row sub">
+            <span class="clock" id="hClock">08:00</span>
+            <span id="hWeather">Clear</span>
+          </div>
+          <div class="energy">
+            <span data-i18n="energy">Energy</span>
+            <div class="bar"><i id="hEnergy"></i></div>
+          </div>
+        </div>
+
+        <div class="glass obj" id="hObj" hidden>
+          <div class="obj-head">
+            <span class="obj-kicker" id="hObjK"></span>
+            <span class="timer" id="hObjTimer" hidden></span>
+          </div>
+          <h3 id="hObjT"></h3>
+          <p id="hObjP"></p>
+          <div class="obj-extra" id="hObjX" hidden></div>
+        </div>
+
+        <div class="hud-right">
+          <div class="hud-btns">
+            <button class="icon-btn" id="bPhone" type="button" aria-label="Phone">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="7" y="2.5" width="10" height="19" rx="2.5" /><path d="M10.5 18.5h3" /></svg>
+            </button>
+            <button class="icon-btn" id="bMap" type="button" aria-label="Map">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6.5l6-2.5 6 2.5 6-2.5v13.5l-6 2.5-6-2.5-6 2.5z" /><path d="M9 4v13.5M15 6.5V20" /></svg>
+            </button>
+            <button class="icon-btn" id="bPause" type="button" aria-label="Pause">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8.5 5v14M15.5 5v14" /></svg>
+            </button>
+          </div>
+          <canvas id="mini" width="240" height="180"></canvas>
+          <div class="glass aerger" id="hAerger" hidden>
+            <span class="pips" id="hPips"><i></i><i></i><i></i><i></i><i></i></span>
+            <span class="alabel" id="hALabel"></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="glass vehbox" id="hVehBox">
+        <div class="gauge" id="hGauge">
+          <span id="hSpd">0</span><small>km/h</small>
+        </div>
+        <div class="vehtext">
+          <div class="veh" id="hVeh"></div>
+          <div class="hint" id="hHint"></div>
+        </div>
+      </div>
+
+      <div id="toast" role="status" aria-live="polite"></div>
+      <div id="cheatflash"></div>
+    </div>
+
+    <!-- =================== TOUCH CONTROLS =================== -->
+    <div id="touch" hidden>
+      <div id="joyZone">
+        <div id="joy"><div id="knob"></div></div>
+      </div>
+      <div class="tbtns">
+        <button data-act="horn" id="tHorn" type="button">Horn</button>
+        <button data-act="alt" id="tAlt" type="button">Run</button>
+        <button data-act="use" class="main" id="tUse" type="button">
+          <span id="tUseL">Use</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- =================== DIALOG =================== -->
+    <div id="dialog" hidden>
+      <div class="who" id="dWho"></div>
+      <p class="txt" id="dTxt"></p>
+      <div class="act" id="dAct">
+        <button class="btn" id="dNext" type="button" data-i18n="next">Next</button>
+      </div>
+    </div>
+
+    <!-- =================== MISSION CARD (briefing / result) =================== -->
+    <div id="mcard" class="overlay" hidden>
+      <div class="card mcard" role="dialog" aria-modal="true" aria-labelledby="mcT">
+        <div class="mc-kicker" id="mcK"></div>
+        <h2 id="mcT"></h2>
+        <p class="mc-lede" id="mcP"></p>
+        <div class="mc-body" id="mcBody"></div>
+        <div class="mc-actions" id="mcA"></div>
+      </div>
+    </div>
+
+    <!-- =================== PHONE =================== -->
+    <div id="phone" hidden role="dialog" aria-label="Phone">
+      <div class="ph-notch"></div>
+      <div class="ph-top">
+        <span id="phClock">08:00</span><span>Lautre-Net 5G</span>
+      </div>
+      <div class="ph-tabs" role="tablist">
+        <button role="tab" data-tab="story" aria-selected="true" type="button" data-i18n="tabStory">Story</button>
+        <button role="tab" data-tab="jobs" aria-selected="false" type="button" data-i18n="tabJobs">Jobs</button>
+        <button role="tab" data-tab="codes" aria-selected="false" type="button" data-i18n="tabCodes">Codes</button>
+        <button role="tab" data-tab="me" aria-selected="false" type="button" data-i18n="tabMe">Me</button>
+      </div>
+      <div class="ph-body" id="phBody"></div>
+      <div class="ph-close">
+        <button id="phClose" aria-label="Close phone" type="button"></button>
+      </div>
+    </div>
+
+    <!-- =================== BIG MAP =================== -->
+    <div id="bigmap" class="overlay" hidden>
+      <div class="wrap">
+        <div class="cap">
+          <span data-i18n="mapTitle">Kaiserslautern · Innenstadt</span>
+          <button class="btn ghost" id="mapClose" type="button" data-i18n="close">Close</button>
+        </div>
+        <canvas id="bigcv" width="840" height="630"></canvas>
+      </div>
+    </div>
+
+    <!-- =================== PAUSE / SETTINGS =================== -->
+    <div id="pause" class="overlay" hidden>
+      <div class="card pausecard" role="dialog" aria-modal="true">
+        <h2 data-i18n="paused">Paused</h2>
+        <div class="settings" id="settingsPause"></div>
+        <div class="mc-actions">
+          <button class="btn" id="pResume" type="button" data-i18n="resume">Resume</button>
+          <button class="btn ghost" id="pMenu" type="button" data-i18n="mainMenu">Main menu</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- =================== LANDING =================== -->
+    <div id="start">
+      <header class="topbar">
+        <div class="brand">
+          <img src="assets/icon.svg" alt="" width="34" height="34" />
+          <span>Lautre</span>
+        </div>
+        <div class="top-actions">
+          <span class="live" id="liveBadge"><i></i><span data-i18n="live">Live</span> <b id="liveTxt">08:00</b></span>
+          <div class="seg" role="group" aria-label="Language">
+            <button type="button" data-lang="en">EN</button>
+            <button type="button" data-lang="de">DE</button>
+          </div>
+        </div>
+      </header>
+
+      <div class="landing">
+        <section class="hero">
+          <p class="eyebrow" data-i18n="eyebrow">Open-city adventure · Kaiserslautern</p>
+          <div class="ortsschild" aria-label="Lautre">
+            <div class="in">
+              <span class="name">Lautre</span>
+              <span class="sub" data-i18n="signSub">Kaiserslautern · Chapter 1: Innenstadt</span>
+            </div>
+          </div>
+          <h1 class="headline" data-i18n-html="headline">New in town.<br />Broke. <em>Determined.</em></h1>
+          <p class="lede" data-i18n-html="lede"></p>
+          <div class="cta">
+            <button class="btn big" id="play" type="button" data-i18n="play">Play</button>
+            <button class="btn ghost big" id="reset" type="button" hidden data-i18n="newGame">New game</button>
+          </div>
+          <p class="note">
+            <span class="kbd-only" data-i18n-html="enterHint"></span>
+            <span class="touch-only" data-i18n="touchHint"></span>
+          </p>
+          <ul class="chips">
+            <li data-i18n="chip1">8 story missions</li>
+            <li data-i18n="chip2">Day &amp; night</li>
+            <li data-i18n="chip3">Live weather</li>
+            <li data-i18n="chip4">Real traffic lights</li>
+            <li data-i18n="chip5">English &amp; Deutsch</li>
+          </ul>
+          <p class="tip" id="tip"></p>
+        </section>
+
+        <section class="panels">
+          <article class="panel">
+            <div class="panel-head">
+              <h2 data-i18n="panelMissions">Chapter 1 · Innenstadt</h2>
+              <span class="progress-txt" id="startProgress"></span>
+            </div>
+            <div class="progress"><i id="startBar"></i></div>
+            <ol class="mlist" id="startMissions"></ol>
+          </article>
+
+          <article class="panel">
+            <h2 data-i18n="panelControls">How to play</h2>
+            <div class="controls kbd-only">
+              <span><kbd>WASD</kbd></span><span data-i18n="cWalk"></span>
+              <span><kbd>Shift</kbd></span><span data-i18n="cRun"></span>
+              <span><kbd>E</kbd></span><span data-i18n="cUse"></span>
+              <span><kbd>Space</kbd></span><span data-i18n="cBrake"></span>
+              <span><kbd>H</kbd></span><span data-i18n="cHorn"></span>
+              <span><kbd>P</kbd></span><span data-i18n="cPhone"></span>
+              <span><kbd>M</kbd></span><span data-i18n="cMap"></span>
+              <span><kbd>Esc</kbd></span><span data-i18n="cPause"></span>
+            </div>
+            <ul class="touch-help touch-only">
+              <li data-i18n="tJoy"></li>
+              <li data-i18n="tUse"></li>
+              <li data-i18n="tAlt"></li>
+              <li data-i18n="tTop"></li>
+            </ul>
+          </article>
+
+          <article class="panel">
+            <h2 data-i18n="panelCity">The city</h2>
+            <div class="districts">
+              <div class="open"><span class="n">Innenstadt</span><span class="s" data-i18n="dInnen"></span></div>
+              <div><span class="n">Vogelweh</span><span class="s" data-i18n="dVogel"></span></div>
+              <div><span class="n">Hohenecken</span><span class="s" data-i18n="dHohen"></span></div>
+              <div><span class="n">Einsiedlerhof</span><span class="s" data-i18n="dEins"></span></div>
+              <div><span class="n">Siegelbach</span><span class="s" data-i18n="dSieg"></span></div>
+            </div>
+          </article>
+
+          <article class="panel">
+            <h2 data-i18n="quality">Graphics</h2>
+            <div class="settings" id="settingsStart"></div>
+          </article>
+
+          <p class="foot" data-i18n="foot"></p>
+        </section>
+      </div>
+    </div>
+
+    <!-- Scripts share one global scope and must load in this order. -->
+    <script src="js/core/i18n.js"></script>
+    <script src="js/core/utils.js"></script>
+    <script src="js/world/world.js"></script>
+    <script src="js/world/traffic-lights.js"></script>
+    <script src="js/world/vehicles.js"></script>
+    <script src="js/core/state.js"></script>
+    <script src="js/systems/audio.js"></script>
+    <script src="js/data/text.js"></script>
+    <script src="js/data/missions.js"></script>
+    <script src="js/systems/missions.js"></script>
+    <script src="js/systems/jobs.js"></script>
+    <script src="js/ui/feedback.js"></script>
+    <script src="js/systems/aerger.js"></script>
+    <script src="js/systems/population.js"></script>
+    <script src="js/systems/actions.js"></script>
+    <script src="js/input/input.js"></script>
+    <script src="js/ui/phone.js"></script>
+    <script src="js/render/ground.js"></script>
+    <script src="js/render/buildings.js"></script>
+    <script src="js/render/sprites.js"></script>
+    <script src="js/render/effects.js"></script>
+    <script src="js/render/maps.js"></script>
+    <script src="js/render/render.js"></script>
+    <script src="js/systems/update.js"></script>
+    <script src="js/ui/hud.js"></script>
+    <script src="js/ui/menus.js"></script>
+    <script src="js/main.js"></script>
+  </body>
+</html>
