@@ -76,6 +76,21 @@ export const sfx = {
   boom() {
     tone(160, 0.5, "triangle", 0.12, 60);
   },
+  /** Another driver's horn; vol 0..1 by distance, long = an annoyed double honk. */
+  carHorn(vol = 1, long = false) {
+    const v = 0.05 * vol;
+    const once = (d) => {
+      tone(349, d, "square", v);
+      tone(440, d, "square", v * 0.8);
+    };
+    once(long ? 0.45 : 0.22);
+    if (long) setTimeout(() => once(0.22), 520);
+  },
+  /** Tyres screeching on an emergency stop. */
+  screech(vol = 1) {
+    noiseBurst(0.35, 2600, 0.06 * vol);
+    tone(1900, 0.3, "sawtooth", 0.015 * vol, 1500);
+  },
 };
 export function rainSound(on) {
   if (!AC) return;

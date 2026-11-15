@@ -1,7 +1,7 @@
 // =================== TRAFFIC LIGHTS ===================
 // Every junction of the road graph where 3+ road edges meet gets a signal.
 // The horizontal and vertical axes alternate: green → amber → all-red.
-import { hash } from "../core/utils.js";
+import { get, hash, T, tc, WALK } from "../core/utils.js";
 import { nodes } from "./world.js";
 
 const SIG_GREEN = 9,
@@ -22,6 +22,20 @@ nodes.forEach((n, id) => {
   SIGNALS.push(s);
   signalAt.set(id, s);
 });
+
+/**
+ * One signal pole per corner that has a pavement: { x, y (world px), s: signal, axis }.
+ * NE + SW serve east–west traffic, NW + SE north–south (right-hand traffic).
+ */
+export const SIGNAL_POLES = [];
+for (const s of SIGNALS) {
+  const o = T * 1.62;
+  for (const [dx, dy, axis] of [[1, -1, "h"], [-1, 1, "h"], [-1, -1, "v"], [1, 1, "v"]]) {
+    const x = tc(s.x) + dx * o,
+      y = tc(s.y) + dy * o;
+    if (get(Math.floor(x / T), Math.floor(y / T)) === WALK) SIGNAL_POLES.push({ x, y, s, axis });
+  }
+}
 
 /** "green" | "amber" | "red" for traffic travelling along axis "h" or "v". */
 export function signalState(s, axis, t = sigClock) {

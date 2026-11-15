@@ -1,14 +1,14 @@
 // =================== UPDATE ===================
 import { tr, tx } from "../core/i18n.js";
 import {
-  angDiff, clamp, dist, eur, FOREST, GRASS, PARK, pick, PITCH, PLAZA, RUIN, T, tileAtPx,
+  angDiff, clamp, dist, eur, FOREST, GRASS, PARK, pick, PITCH, PLAZA, ROAD, RUIN, T, tileAtPx,
 } from "../core/utils.js";
 import { edges, nodes } from "../world/world.js";
 import { BLITZER, signalAt, signalNearTile, signalState } from "../world/traffic-lights.js";
 import {
   footBlocked, placeAI, unstick, vehBlocked, vehCircles, vehicles, vehOverlap, VT,
 } from "../world/vehicles.js";
-import { bubbles, drops, game, P, particles, save, weather } from "../core/state.js";
+import { bubbles, drops, game, P, particles, peds, save, weather } from "../core/state.js";
 import { rainSound, sfx } from "./audio.js";
 import { ANGRY, L2 } from "../data/text.js";
 import { NAR } from "../data/missions.js";
@@ -17,6 +17,7 @@ import { addAerger } from "./aerger.js";
 import { bubble, respawnBottle } from "./population.js";
 import { exitVeh, onCrash } from "./actions.js";
 import { input } from "../input/input.js";
+import { carBlocked, carFree, carTick, footStepBlocked } from "./street.js";
 import { H, W } from "../render/ground.js";
 import { emitTyres, puff } from "../render/effects.js";
 
@@ -35,8 +36,9 @@ export function updatePlayer(dt) {
       P.anim += dt;
       const nx = P.x + mx * sp * dt,
         ny = P.y + my * sp * dt;
-      if (!footBlocked(nx, P.y)) P.x = nx;
-      if (!footBlocked(P.x, ny)) P.y = ny;
+      // walls, then poles / trees / cars (slide along whatever is in the way)
+      if (!footBlocked(nx, P.y) && !footStepBlocked(P.x, P.y, nx, P.y)) P.x = nx;
+      if (!footBlocked(P.x, ny) && !footStepBlocked(P.x, P.y, P.x, ny)) P.y = ny;
       if (run && game.superSprint <= 0) P.energy -= 2.2 * dt;
     }
     P.energy -= 0.07 * dt;
@@ -298,6 +300,8 @@ export function updateTraffic(dt) {
       if (f <= 0 || f > lx) return false;
       return Math.abs(-dx * s + dy * c) < 15;
     };
+    // who is in the way? (decides whether the driver honks and what they shout)
+    let who = null;
     for (const o of vehicles) {
       if (
         o === v ||
@@ -307,18 +311,39 @@ export function updateTraffic(dt) {
         continue;
       if (ahead(o.x, o.y, look + VT[o.type].len * 0.4)) {
         tgtS = 0;
+        // stuck behind a car nobody drives (e.g. the one you left in the lane)
+        if (!o.ai) who = o === P.veh && !P.onFoot ? "playerCar" : "parked";
         break;
       }
     }
     // never plough into the player's car (it may sit sideways in the lane)
     if (tgtS > 0 && !P.onFoot && P.veh && P.veh !== v && Math.abs(P.veh.x - v.x) < 140 && Math.abs(P.veh.y - v.y) < 140) {
-      if (vehOverlap(v, v.x + c * look * 0.75, v.y + s * look * 0.75, v.a, P.veh)) tgtS = 0;
+      if (vehOverlap(v, v.x + c * look * 0.75, v.y + s * look * 0.75, v.a, P.veh)) {
+        tgtS = 0;
+        who = "playerCar";
+      }
     }
     if (tgtS > 0 && game.state !== "title") {
-      if (P.onFoot ? ahead(P.x, P.y, look + 10) : false) tgtS = 0;
+      if (P.onFoot && ahead(P.x, P.y, look + 10)) {
+        tgtS = 0;
+        who = "player";
+      }
       for (const ch of game.chasers)
         if (ch.kind === "van" && ahead(ch.x, ch.y, look + 20)) tgtS = 0;
     }
+    // pedestrians crossing the road
+    if (tgtS > 0)
+      for (const p of peds) {
+        if (p.knock || Math.abs(p.x - v.x) > 110 || Math.abs(p.y - v.y) > 110) continue;
+        if (tileAtPx(p.x, p.y) === ROAD && ahead(p.x, p.y, look + 14)) {
+          tgtS = 0;
+          who = p;
+          break;
+        }
+      }
+    if (who) carBlocked(v, who, v.speed > 80, dt);
+    else if (tgtS > 0) carFree(v, dt);
+    else carTick(v, dt);
     const e = edges[a.e];
     const fromId = a.fwd ? e.a : e.b,
       toId = a.fwd ? e.b : e.a;

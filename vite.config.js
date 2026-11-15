@@ -41,5 +41,7 @@ function serviceWorkerPrecache() {
 export default defineConfig({
   // relative URLs, so the build also works from a sub-path (e.g. GitHub Pages)
   base: "./",
+  // three.js is one ~570 kB chunk (146 kB gzipped), loaded only for the 3D view
+  build: { chunkSizeWarningLimit: 700 },
   plugins: [serviceWorkerPrecache()],
 });

@@ -4,12 +4,22 @@ import {
   $, BLD, FOREST, get, GRASS, hash, LAND, LOT, PARK, PITCH, PLAZA, RAIL, ROAD, RUIN, T, tc, WALK,
   WATER,
 } from "../core/utils.js";
-import { SEGS } from "../world/world.js";
+import { SEGS, SIGN_SPOTS } from "../world/world.js";
 import { weather } from "../core/state.js";
 import { shadowFill, SUN } from "./effects.js";
 
-export const cv = $("cv"),
-  ctx = cv.getContext("2d");
+export const cv = $("cv");
+export let ctx = cv.getContext("2d");
+/** Runs fn with every draw function pointed at another 2D context (used to bake the 3D ground texture). */
+export function drawWith(c, fn) {
+  const old = ctx;
+  ctx = c;
+  try {
+    fn();
+  } finally {
+    ctx = old;
+  }
+}
 export const lc = document.createElement("canvas"),
   lctx = lc.getContext("2d");
 export let W = 0,
@@ -204,63 +214,49 @@ export function drawTrees(x0, y0, x1, y1) {
       }
     }
 }
-export function drawRoadMarks(l, t, r, b) {
-  ctx.strokeStyle = "rgba(240,236,225,.75)";
-  ctx.lineWidth = 2;
-  ctx.setLineDash([14, 14]);
-  ctx.beginPath();
-  for (const s of SEGS) {
-    const ax = tc(s.a[0]),
-      ay = tc(s.a[1]),
-      bx = tc(s.b[0]),
-      by = tc(s.b[1]);
-    if (
-      Math.max(ax, bx) < l ||
-      Math.min(ax, bx) > r ||
-      Math.max(ay, by) < t ||
-      Math.min(ay, by) > b
-    )
-      continue;
-    ctx.moveTo(ax, ay);
-    ctx.lineTo(bx, by);
+/** One blue street-name sign centred on (x, y) in the current transform. */
+export function drawStreetSign(n, x, y) {
+  ctx.font = '600 11px "Atkinson Hyperlegible",system-ui,sans-serif';
+  ctx.textBaseline = "middle";
+  const w = ctx.measureText(n).width + 12;
+  ctx.fillStyle = "#fff";
+  ctx.fillRect(x - w / 2 - 1, y - 9, w + 2, 18);
+  ctx.fillStyle = "#1d3b74";
+  ctx.fillRect(x - w / 2, y - 8, w, 16);
+  ctx.fillStyle = "#fff";
+  ctx.textAlign = "center";
+  ctx.fillText(n, x, y + 1);
+}
+/** Lane dashes, level-crossing barriers and street signs. The 3D view bakes
+ *  only the barriers and draws dashes and signs itself (sharper up close). */
+export function drawRoadMarks(l, t, r, b, { dashes = true, signs = true } = {}) {
+  if (dashes) {
+    ctx.strokeStyle = "rgba(240,236,225,.75)";
+    ctx.lineWidth = 2;
+    ctx.setLineDash([14, 14]);
+    ctx.beginPath();
+    for (const s of SEGS) {
+      const ax = tc(s.a[0]),
+        ay = tc(s.a[1]),
+        bx = tc(s.b[0]),
+        by = tc(s.b[1]);
+      if (Math.max(ax, bx) < l || Math.min(ax, bx) > r || Math.max(ay, by) < t || Math.min(ay, by) > b) continue;
+      ctx.moveTo(ax, ay);
+      ctx.lineTo(bx, by);
+    }
+    ctx.stroke();
+    ctx.setLineDash([]);
   }
-  ctx.stroke();
-  ctx.setLineDash([]);
   // Bahnübergang barriers
-  ctx.fillStyle = "#d22";
   for (const yy of [72, 75]) {
     for (let k = 0; k < 3; k++) {
       ctx.fillStyle = k % 2 ? "#fff" : "#d22";
-      ctx.fillRect(
-        tc(94) + k * 10,
-        yy * T + (yy === 72 ? 26 : 2),
-        10,
-        4,
-      );
+      ctx.fillRect(tc(94) + k * 10, yy * T + (yy === 72 ? 26 : 2), 10, 4);
     }
   }
-  // street name signs
-  ctx.font = '600 11px "Atkinson Hyperlegible",system-ui,sans-serif';
-  ctx.textBaseline = "middle";
-  for (const s of SEGS) {
-    const len = Math.abs(s.b[0] - s.a[0]) + Math.abs(s.b[1] - s.a[1]);
-    for (let k = 6; k < len; k += 22) {
-      const x = s.h
-          ? tc(Math.min(s.a[0], s.b[0]) + k)
-          : tc(s.a[0]) + T * 1.75,
-        y = s.h
-          ? tc(s.a[1]) - T * 1.75
-          : tc(Math.min(s.a[1], s.b[1]) + k);
-      if (x < l - 200 || x > r + 200 || y < t - 50 || y > b + 50)
-        continue;
-      const w = ctx.measureText(s.n).width + 12;
-      ctx.fillStyle = "#fff";
-      ctx.fillRect(x - w / 2 - 1, y - 9, w + 2, 18);
-      ctx.fillStyle = "#1d3b74";
-      ctx.fillRect(x - w / 2, y - 8, w, 16);
-      ctx.fillStyle = "#fff";
-      ctx.textAlign = "center";
-      ctx.fillText(s.n, x, y + 1);
+  if (signs)
+    for (const sp of SIGN_SPOTS) {
+      if (sp.x < l - 200 || sp.x > r + 200 || sp.y < t - 50 || sp.y > b + 50) continue;
+      drawStreetSign(sp.n, sp.x, sp.y);
     }
-  }
 }

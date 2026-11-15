@@ -57,6 +57,12 @@ export const peds = [],
   particles = [],
   drops = [];
 export const cam = { x: tc(70), y: tc(40) };
+/**
+ * Where "forward" on the controls points, as a world angle. Top-down views keep
+ * it north (−π/2); the 3D chase / first-person cameras turn it with the camera,
+ * so W always walks away from the camera.
+ */
+export const camView = { forward: -Math.PI / 2 };
 export const keys = {};
 export const tin = { x: 0, y: 0, active: false, sprint: false, brake: false };
 

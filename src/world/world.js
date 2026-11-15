@@ -411,6 +411,28 @@ for (let y = 0; y < MH; y++)
       windowsLit.push([x, y]);
   }
 
+/** Where the street-name signs stand: { n: name, x, y (world px), h: street runs east–west }. */
+export const SIGN_SPOTS = [];
+for (const s of SEGS) {
+  const len = Math.abs(s.b[0] - s.a[0]) + Math.abs(s.b[1] - s.a[1]);
+  for (let k = 6; k < len; k += 22)
+    SIGN_SPOTS.push({
+      n: s.n,
+      h: s.h,
+      x: s.h ? tc(Math.min(s.a[0], s.b[0]) + k) : tc(s.a[0]) + T * 1.75,
+      y: s.h ? tc(s.a[1]) - T * 1.75 : tc(Math.min(s.a[1], s.b[1]) + k),
+    });
+}
+/** Single trees in parks, on pavements and plazas: [x, y, crown radius] (world px). */
+export const STREET_TREES = [];
+for (let y = 0; y < MH; y++)
+  for (let x = 0; x < MW; x++) {
+    const v = get(x, y),
+      h = hash(x, y);
+    if ((v === PARK && h > 0.72) || (v === WALK && h > 0.965 && x >= 15) || (v === PLAZA && h > 0.95))
+      STREET_TREES.push([x * T + 8 + h * 16, y * T + 8 + hash(y, x) * 16, v === PARK ? 13 : 9]);
+  }
+
 // ---- traffic graph ----
 export const nodes = [],
   nodeAt = new Map(),

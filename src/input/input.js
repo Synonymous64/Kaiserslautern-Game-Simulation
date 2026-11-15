@@ -2,7 +2,7 @@
 import { IS_TOUCH, tr, tx } from "../core/i18n.js";
 import { $, angDiff, clamp, T, tc } from "../core/utils.js";
 import { mkVeh, unstick } from "../world/vehicles.js";
-import { game, keys, P, save, tin, weather } from "../core/state.js";
+import { camView, game, keys, P, save, tin, weather } from "../core/state.js";
 import { audio, sfx } from "../systems/audio.js";
 import { L2 } from "../data/text.js";
 import { choose, dCur, flash, nextDialog, pos } from "../ui/feedback.js";
@@ -12,6 +12,7 @@ import { horn, useKey } from "../systems/actions.js";
 import { closeMap, closePhone, openMap, openPhone } from "../ui/phone.js";
 import { cardDefault, closePause, openPause } from "../ui/menus.js";
 import { startGame } from "../main.js";
+import { cycleCamera } from "../render/view.js";
 
 export const CHEATS = {
   REJE: [L2("Es rejent", "Es rejent"), L2("Heavy rain", "Starkregen"), () => { weather.rain = true; weather.lock = 120; }],
@@ -78,7 +79,7 @@ addEventListener("keydown", (e) => {
       for (let n = 2; n <= Math.min(c.length - 1, cbuf.length); n++)
         if (cbuf.slice(-n) === c.slice(0, n)) typing = true;
   }
-  if (typing && "ehpm".includes(k.toLowerCase())) return;
+  if (typing && "ehpmv".includes(k.toLowerCase())) return;
   if (e.repeat) return;
   const lk = k.toLowerCase();
   if (game.state === "dialog") {
@@ -96,6 +97,7 @@ addEventListener("keydown", (e) => {
   else if (lk === "h") horn();
   else if (lk === "p" || k === "Tab") game.state === "phone" ? closePhone() : openPhone();
   else if (lk === "m") game.state === "map" ? closeMap() : openMap();
+  else if (lk === "v" && game.state === "play") cycleCamera();
   else if (k === "Escape") {
     if (game.state === "phone") closePhone();
     else if (game.state === "map") closeMap();
@@ -131,11 +133,15 @@ export function input() {
   if (keys.w || keys.arrowup) y -= 1;
   if (keys.s || keys.arrowdown) y += 1;
   let hand = !!(keys[" "] || tin.brake);
+  // screen "up" → camView.forward: rotate screen-relative directions into the world
+  const r = camView.forward + Math.PI / 2,
+    rc = Math.cos(r),
+    rs = Math.sin(r);
   if (tin.active) {
     const mag = Math.min(1, Math.hypot(tin.x, tin.y));
     if (!P.onFoot && P.veh && mag > 0.15) {
       const v = P.veh,
-        want = Math.atan2(tin.y, tin.x);
+        want = Math.atan2(tin.y, tin.x) + r;
       let d = angDiff(v.a, want);
       const reversing = v.speed < 5 && Math.abs(d) > 2.3;
       if (reversing) {
@@ -152,6 +158,8 @@ export function input() {
       y += tin.y;
     }
   }
+  // on foot, movement is a world direction; vehicles steer relative to themselves
+  if (P.onFoot && r !== 0) [x, y] = [x * rc - y * rs, x * rs + y * rc];
   return {
     x: clamp(x, -1, 1),
     y: clamp(y, -1, 1),
@@ -243,6 +251,7 @@ export const coarse = IS_TOUCH;
 $("bPhone").addEventListener("click", () => (game.state === "phone" ? closePhone() : openPhone()));
 $("bMap").addEventListener("click", () => (game.state === "map" ? closeMap() : openMap()));
 $("bPause").addEventListener("click", () => openPause());
+$("bCam").addEventListener("click", () => game.state === "play" && cycleCamera());
 // stop the context menu / long-press callout on the game surface
 addEventListener("contextmenu", (e) => {
   if (game.state !== "title") e.preventDefault();

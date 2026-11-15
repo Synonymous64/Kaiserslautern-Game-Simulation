@@ -128,7 +128,7 @@ function spire(x, y, s, col) {
     ctx.fill();
   }
 }
-function label(text, x, y, size = 15) {
+export function label(text, x, y, size = 15) {
   ctx.font = `700 ${size}px "Barlow Condensed","Arial Narrow",sans-serif`;
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
@@ -337,25 +337,26 @@ export function drawLandmarks(l, t, r, b) {
     ctx.fill();
   }
 }
+/** Place names: [name, tile x, tile y]. */
+export const LABELS = [
+  ["Stiftskirche", 61, 38],
+  [{ en: "Town Hall · 84 m", de: "Rathaus · 84 m" }, 71, 19],
+  ["Im K", 50.5, 31.2],
+  ["Fruchthalle", 61, 47.4],
+  ["Pfalztheater", 74, 46.4],
+  [{ en: "Main Station", de: "Hauptbahnhof" }, 58, 72.3],
+  ["Stadion Betzenberg", 13, 33.8],
+  ["Pfaff-Quartier", 38.5, 16.4],
+  ["Kaiserpfalz", 77.5, 18.4],
+  ["Gartenschau", 95, 1.2],
+  [{ en: "Japanese Garden", de: "Japanischer Garten" }, 101, 9.6],
+  [{ en: "City Park", de: "Stadtpark" }, 38, 51],
+  ["Campus", 108, 74.8],
+  ["Fackelstraße", 56, 49],
+  ["Stiftsplatz", 54, 40],
+];
 export function drawLabels(l, t, r, b) {
-  const items = [
-    ["Stiftskirche", 61, 38],
-    [{ en: "Town Hall · 84 m", de: "Rathaus · 84 m" }, 71, 19],
-    ["Im K", 50.5, 31.2],
-    ["Fruchthalle", 61, 47.4],
-    ["Pfalztheater", 74, 46.4],
-    [{ en: "Main Station", de: "Hauptbahnhof" }, 58, 72.3],
-    ["Stadion Betzenberg", 13, 33.8],
-    ["Pfaff-Quartier", 38.5, 16.4],
-    ["Kaiserpfalz", 77.5, 18.4],
-    ["Gartenschau", 95, 1.2],
-    [{ en: "Japanese Garden", de: "Japanischer Garten" }, 101, 9.6],
-    [{ en: "City Park", de: "Stadtpark" }, 38, 51],
-    ["Campus", 108, 74.8],
-    ["Fackelstraße", 56, 49],
-    ["Stiftsplatz", 54, 40],
-  ];
-  for (const [n, x, y] of items) {
+  for (const [n, x, y] of LABELS) {
     const px = x * T + 16,
       py = y * T;
     if (px < l - 200 || px > r + 200 || py < t - 40 || py > b + 40)

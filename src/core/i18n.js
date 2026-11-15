@@ -13,6 +13,8 @@ export const SETTINGS = (() => {
       : "en",
     sound: true,
     quality: IS_TOUCH ? "low" : "high",
+    view: "3d", // "3d" (three.js) or "2d" (classic top-down canvas)
+    camera: "chase", // 3D camera: "chase" (behind), "fpv" (first person) or "top"
   };
   try {
     return Object.assign(
@@ -82,6 +84,7 @@ export const I18N = {
     de: "Handy: Missionen, Jobs, Codes",
   },
   cMap: { en: "City map", de: "Stadtplan" },
+  cCam: { en: "Camera (3D: behind, first person, top)", de: "Kamera (3D: hinten, Ego, oben)" },
   cPause: { en: "Pause & settings", de: "Pause & Einstellungen" },
   tJoy: {
     en: "Drag anywhere on the left half to move. Your vehicle turns towards the stick.",
@@ -134,6 +137,7 @@ export const I18N = {
   sound: { en: "Sound", de: "Ton" },
   music: { en: "Music", de: "Musik" },
   quality: { en: "Graphics", de: "Grafik" },
+  view: { en: "View", de: "Ansicht" },
   qHigh: { en: "High", de: "Hoch" },
   qLow: { en: "Fast", de: "Schnell" },
   on: { en: "On", de: "An" },

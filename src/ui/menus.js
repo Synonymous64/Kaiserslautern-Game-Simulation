@@ -1,6 +1,4 @@
 // =================== CARDS, PAUSE, SETTINGS, LANDING ===================
-
-// ---------- modal card (mission briefing / result / fail / finale) ----------
 import {
   applyI18n, I18N, langListeners, saveSettings, setLang, SETTINGS, tr, tx,
 } from "../core/i18n.js";
@@ -14,9 +12,11 @@ import { abandonMission, M, totalStars } from "../systems/missions.js";
 import { clearDialog, resumeDialog } from "./feedback.js";
 import { closeMap, closePhone, el } from "./phone.js";
 import { resize } from "../render/ground.js";
+import { applyView } from "../render/view.js";
 import { updateHUD } from "./hud.js";
 import { hasSave } from "../main.js";
 
+// ---------- modal card (mission briefing / result / fail / finale) ----------
 let cardActs = [],
   cardRefresh = null; // re-renders the open card after a language switch
 export function showCard({ kicker, title, lede, body = [], actions = [], fail = false, refresh = null }) {
@@ -88,6 +88,11 @@ function renderSettings() {
       segRow(tr(I18N.music), [[true, tr(I18N.on)], [false, tr(I18N.off)]], MUSIC.on, (v) => {
         audio();
         setMusic(v);
+      }),
+      segRow(tr(I18N.view), [["3d", "3D"], ["2d", "2D"]], SETTINGS.view, (v) => {
+        SETTINGS.view = v;
+        saveSettings();
+        applyView();
       }),
       segRow(tr(I18N.quality), [["high", tr(I18N.qHigh)], ["low", tr(I18N.qLow)]], SETTINGS.quality, (v) => {
         SETTINGS.quality = v;

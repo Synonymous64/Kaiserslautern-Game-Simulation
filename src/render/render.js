@@ -249,17 +249,7 @@ export function render() {
   }
   drawGrade();
 
-  // ---- rain ----
-  if (weather.rain) {
-    ctx.strokeStyle = "rgba(200,215,235,.42)";
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    for (const d of drops) {
-      ctx.moveTo(d.x, d.y);
-      ctx.lineTo(d.x - 3, d.y + 14);
-    }
-    ctx.stroke();
-  }
+  drawRain();
   // ---- speech bubbles ----
   if (bubbles.length) {
     worldTransform();
@@ -267,45 +257,61 @@ export function render() {
     ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
   }
   // ---- off-screen objective arrow ----
-  if (tg) {
-    const sx = (tg.x - cam.x) * game.Z + W / 2,
-      sy = (tg.y - cam.y) * game.Z + H / 2,
-      m = 56;
-    if (sx < m || sy < m || sx > W - m || sy > H - m) {
-      const a = Math.atan2(sy - H / 2, sx - W / 2);
-      // keep the arrow in the free band between the HUD and the controls
-      const top = Math.min(H / 2, HUD_SAFE.top),
-        bot = Math.max(H / 2, H - HUD_SAFE.bottom);
-      const cx = clamp(sx, m, W - m),
-        cy = clamp(sy, top, bot);
-      ctx.save();
-      ctx.translate(cx, cy);
-      ctx.rotate(a);
-      ctx.fillStyle = "#f2c230";
-      ctx.strokeStyle = "#111";
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.moveTo(16, 0);
-      ctx.lineTo(-10, -11);
-      ctx.lineTo(-5, 0);
-      ctx.lineTo(-10, 11);
-      ctx.closePath();
-      ctx.fill();
-      ctx.stroke();
-      ctx.restore();
-      const dm = (Math.hypot(tg.x - q.x, tg.y - q.y) / T) * 25;
-      ctx.font = '600 12px "IBM Plex Mono",monospace';
-      ctx.textAlign = "center";
-      ctx.textBaseline = "middle";
-      ctx.lineWidth = 3;
-      ctx.strokeStyle = "rgba(0,0,0,.7)";
-      const tx =
-        dm >= 1000
-          ? (SETTINGS.lang === "de" ? (dm / 1000).toFixed(1).replace(".", ",") : (dm / 1000).toFixed(1)) + " km"
-          : Math.round(dm / 10) * 10 + " m";
-      ctx.strokeText(tx, cx - Math.cos(a) * 26, cy - Math.sin(a) * 26);
-      ctx.fillStyle = "#fff";
-      ctx.fillText(tx, cx - Math.cos(a) * 26, cy - Math.sin(a) * 26);
-    }
+  if (tg) drawObjectiveArrow(tg, q, (tg.x - cam.x) * game.Z + W / 2, (tg.y - cam.y) * game.Z + H / 2);
+}
+
+/** Screen-space rain streaks (expects an identity-scaled screen transform). */
+export function drawRain() {
+  if (!weather.rain) return;
+  ctx.strokeStyle = "rgba(200,215,235,.42)";
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  for (const d of drops) {
+    ctx.moveTo(d.x, d.y);
+    ctx.lineTo(d.x - 3, d.y + 14);
   }
+  ctx.stroke();
+}
+
+/**
+ * Edge-of-screen arrow + distance when the objective (screen position sx, sy)
+ * is off screen. q = the player's world position.
+ */
+export function drawObjectiveArrow(tg, q, sx, sy, distPx = Math.hypot(tg.x - q.x, tg.y - q.y)) {
+  const m = 56;
+  if (!(sx < m || sy < m || sx > W - m || sy > H - m)) return;
+  const a = Math.atan2(sy - H / 2, sx - W / 2);
+  // keep the arrow in the free band between the HUD and the controls
+  const top = Math.min(H / 2, HUD_SAFE.top),
+    bot = Math.max(H / 2, H - HUD_SAFE.bottom);
+  const cx = clamp(sx, m, W - m),
+    cy = clamp(sy, top, bot);
+  ctx.save();
+  ctx.translate(cx, cy);
+  ctx.rotate(a);
+  ctx.fillStyle = "#f2c230";
+  ctx.strokeStyle = "#111";
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(16, 0);
+  ctx.lineTo(-10, -11);
+  ctx.lineTo(-5, 0);
+  ctx.lineTo(-10, 11);
+  ctx.closePath();
+  ctx.fill();
+  ctx.stroke();
+  ctx.restore();
+  const dm = (distPx / T) * 25;
+  ctx.font = '600 12px "IBM Plex Mono",monospace';
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.lineWidth = 3;
+  ctx.strokeStyle = "rgba(0,0,0,.7)";
+  const tx =
+    dm >= 1000
+      ? (SETTINGS.lang === "de" ? (dm / 1000).toFixed(1).replace(".", ",") : (dm / 1000).toFixed(1)) + " km"
+      : Math.round(dm / 10) * 10 + " m";
+  ctx.strokeText(tx, cx - Math.cos(a) * 26, cy - Math.sin(a) * 26);
+  ctx.fillStyle = "#fff";
+  ctx.fillText(tx, cx - Math.cos(a) * 26, cy - Math.sin(a) * 26);
 }

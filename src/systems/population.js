@@ -3,15 +3,16 @@ import { SETTINGS } from "../core/i18n.js";
 import { LOT, MW, PARK, pick, PITCH, PLAZA, ROAD, T, tc, tileAtPx, WALK } from "../core/utils.js";
 import { pedTiles } from "../world/world.js";
 import { vehCircles } from "../world/vehicles.js";
-import { bubbles, cam, game, P, particles, peds, weather } from "../core/state.js";
+import { bubbles, cam, game, keys, P, particles, peds, tin, weather } from "../core/state.js";
 import { sfx } from "./audio.js";
-import { ANGRY, FAN, L2, PED_LINES } from "../data/text.js";
+import { ANGRY, FAN, L2, NIGHT_LINES, PED_LINES, RAIN_LINES } from "../data/text.js";
 import { pos } from "../ui/feedback.js";
 import { addAerger } from "./aerger.js";
 import { onCrash } from "./actions.js";
 import { darkness } from "../render/maps.js";
+import { pedBlocked, pedBumped } from "./street.js";
 
-export const SKIN = ["#f1c9a5", "#d9a57b", "#a8714a", "#7a4b2c", "#e6b98f"];
+export const SKIN = ["#f6d5b8", "#f1c9a5", "#e6b98f", "#d9a57b", "#c18a5e", "#a8714a", "#8a5a36", "#7a4b2c", "#5c3a21", "#3f2716"];
 const HAIR = ["#2b1d14", "#4a3020", "#8a6a3a", "#c9a46a", "#1a1a1a", "#9a9a9a"];
 const LEGS = ["#2a2d33", "#33415c", "#3b3b3b", "#5a4a3a", "#1f2a44"];
 const UMBRELLAS = ["#1d3b74", "#c42222", "#2b2b2b", "#f2c230", "#2f8f4a", "#7a3b8f"];
@@ -80,6 +81,20 @@ export function updatePeds(dt) {
       p.t = 2 + Math.random() * 4;
       p.a = Math.random() * Math.PI * 2;
       p.stand = Math.random() < 0.2;
+      p.cross = false;
+      // now and then someone crosses the road (not always where they should)
+      if (!game.matchday && !night && Math.random() < 0.14) {
+        const dirs = [[1, 0], [-1, 0], [0, 1], [0, -1]].filter(
+          ([dx, dy]) => tileAtPx(p.x + dx * T * 1.2, p.y + dy * T * 1.2) === ROAD,
+        );
+        if (dirs.length) {
+          const [dx, dy] = pick(dirs);
+          p.a = Math.atan2(dy, dx);
+          p.cross = true;
+          p.stand = false;
+          p.t = 9;
+        }
+      }
       if (game.matchday && p.fan) {
         p.a =
           Math.atan2(tc(42) - p.y, tc(13) - p.x) +
@@ -88,11 +103,17 @@ export function updatePeds(dt) {
       }
     }
     if (!p.stand) {
-      const nx = p.x + Math.cos(p.a) * p.sp * dt,
-        ny = p.y + Math.sin(p.a) * p.sp * dt;
-      if (walkableP(nx, ny)) {
+      const onRoad = tileAtPx(p.x, p.y) === ROAD;
+      const sp = p.sp * (p.cross || onRoad ? 1.35 : 1); // hurry across
+      const nx = p.x + Math.cos(p.a) * sp * dt,
+        ny = p.y + Math.sin(p.a) * sp * dt;
+      const ok = walkableP(nx, ny) || (tileAtPx(nx, ny) === ROAD && (p.cross || onRoad));
+      if (ok && !pedBlocked(nx, ny)) {
         p.x = nx;
         p.y = ny;
+        if (onRoad && walkableP(p.x, p.y)) p.cross = false; // made it across
+      } else if (p.cross && ok) {
+        // a car is in the way: wait for it instead of turning back
       } else {
         p.a += Math.PI * (0.5 + Math.random());
       }
@@ -126,6 +147,8 @@ export function updatePeds(dt) {
       if (d < 13 && d > 0) {
         p.x += ((p.x - P.x) / d) * 1.5;
         p.y += ((p.y - P.y) / d) * 1.5;
+        if (p.lastBump !== P.anim) pedBumped(p, (keys.shift || tin.sprint) && P.energy > 2);
+        p.lastBump = P.anim;
       }
     }
     if (
@@ -134,7 +157,12 @@ export function updatePeds(dt) {
       Math.hypot(p.x - q.x, p.y - q.y) < T * 7 &&
       !bubbles.length
     )
-      bubble(p, p.fan ? pick(FAN) : pick(PED_LINES));
+      bubble(
+        p,
+        p.fan
+          ? pick(FAN)
+          : pick(weather.rain && Math.random() < 0.4 ? RAIN_LINES : night && Math.random() < 0.4 ? NIGHT_LINES : PED_LINES),
+      );
   }
   // bounded: spawnPed can fail near the map edge (used to freeze the game)
   for (let k = 0; k < 12 && peds.length < want; k++)

@@ -12,8 +12,16 @@ Ordnungsamt and make kickoff on the Betzenberg.
 - Day/night cycle, weather and wet roads, traffic lights, a speed camera,
   drifting, engine sound
 - A calm generative soundtrack that follows the time of day and the weather
+- **3D view** (three.js) or the classic top-down 2D view, switchable in the
+  settings (*View: 3D / 2D*); in 3D a chase camera, first person or from above
+- Sat-nav: the route along the streets on the minimap, plus a compass and a waypoint pin in 3D
+- A living street: drivers brake, honk and shout when you step in front of
+  them, jaywalkers answer back, people chat with each other and react when you
+  bump into them; lamp posts, traffic lights, trees and cars are solid
+- A diverse city: people of every skin tone and gender presentation, kids,
+  grandparents and wheelchair users, each with their own face
 - Plain JavaScript modules built with [Vite](https://vite.dev): no framework,
-  no backend, no runtime dependencies
+  no backend; [three.js](https://threejs.org) is the only runtime dependency
 
 ## Play locally
 
@@ -70,7 +78,12 @@ src/
   systems/   missions.js (engine), jobs.js, aerger.js (wanted level),
              population.js, actions.js, audio.js, music.js, update.js (physics, AI)
   input/     input.js (keyboard, cheats, touch)
-  render/    ground, buildings, sprites, effects, maps, render
+  render/    2D view: ground, buildings, sprites, effects, maps, render;
+             view.js switches between the 2D and 3D renderer
+  render3d/  3D view (three.js, loaded on demand): city.js (buildings,
+             landmarks, trees, lamps, signals from the tile map), actors.js
+             (vehicles, people, pickups), cutout.js (see-through buildings),
+             textures.js, index.js (camera, day/night, weather, 2D overlay)
   ui/        feedback.js (toasts, dialog), phone.js, hud.js, menus.js
   styles/    base, landing, hud, overlays, touch (.css)
 archive/                the original single-file version
@@ -81,6 +94,13 @@ modules change during play (`state`, `clock`, `day`, the active job, Ärger
 level, story progress, camera zoom…) lives on the `game` object exported from
 `src/core/state.js`. A module cannot reassign another module's variables, so
 write `game.clock += dt`, not a new top-level `let`.
+
+Both views only *read* the game state; gameplay code never knows which one is
+active. The 3D city is generated from the same tile map as the 2D one (the
+ground texture is painted by the 2D tile renderer), so map changes show up in
+both. In 3D the 2D canvas stays on top as a transparent overlay for labels,
+speech bubbles, the objective arrow, rain and colour grading. If WebGL is not
+available the game falls back to 2D automatically.
 
 ### Adding a mission
 
@@ -97,6 +117,8 @@ written as `L2("English", "Deutsch")`.
 | Use (enter, buy, talk) | E | big button (shows its action) |
 | Horn | H | Horn button (in vehicles) |
 | Phone / map / pause | P / M / Esc | top-right buttons |
+| Camera (3D): behind → first person → from above | V | camera button |
+| Look around (3D street views) | click the city, then move the mouse (Esc releases it) | drag on the right side |
 | Dialogue choice | 1 / 2 | tap |
 
 ## Credits

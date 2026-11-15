@@ -13,11 +13,12 @@ import { updateJob } from "./systems/jobs.js";
 import { pos, say, toast, updateFeedback } from "./ui/feedback.js";
 import { clearAerger, updateChasers } from "./systems/aerger.js";
 import { SKIN, updatePeds } from "./systems/population.js";
+import { updateStreet } from "./systems/street.js";
 import { coarse } from "./input/input.js";
 import { H, W } from "./render/ground.js";
 import { updateClouds, updateSkids, updateSmoke } from "./render/effects.js";
 import { drawMini } from "./render/maps.js";
-import { render } from "./render/render.js";
+import { applyView, renderFrame } from "./render/view.js";
 import { updateParticles, updatePlayer, updateTraffic, updateWeather } from "./systems/update.js";
 import { resetHUD, tickHUD } from "./ui/hud.js";
 import { refreshLanding } from "./ui/menus.js";
@@ -43,6 +44,7 @@ function step(now) {
   if (playing || game.state === "title" || game.state === "dialog" || game.state === "card") {
     updateTraffic(dt);
     updatePeds(dt);
+    updateStreet(dt);
     updateWeather(dt);
     updateParticles(dt);
     updateSmoke(dt);
@@ -98,7 +100,7 @@ function step(now) {
     shy = game.shake ? (Math.random() - 0.5) * game.shake * 2 : 0;
   cam.x += shx;
   cam.y += shy;
-  render();
+  renderFrame();
   cam.x -= shx;
   cam.y -= shy;
   if (game.state !== "title") {
@@ -196,6 +198,7 @@ document.body.classList.add(coarse ? "touch" : "kbd");
 export let hasSave = load();
 refreshLanding();
 updateLiveBadge();
+applyView();
 requestAnimationFrame(frame);
 
 // Offline support + installable app (production builds served over http/https;

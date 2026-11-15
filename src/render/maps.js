@@ -8,6 +8,7 @@ import { POIS } from "../world/world.js";
 import { game, P } from "../core/state.js";
 import { M, missionTarget } from "../systems/missions.js";
 import { pos } from "../ui/feedback.js";
+import { routeTo } from "../systems/route.js";
 
 const miniBase = document.createElement("canvas");
 miniBase.width = MW;
@@ -62,6 +63,14 @@ export function drawMini() {
   mctx.drawImage(miniBase, ox, oy, MW * s, MH * s);
   const tg = target();
   if (tg) {
+    // sat-nav route along the streets
+    const pts = routeTo(q, tg);
+    mctx.strokeStyle = "rgba(242,194,48,.95)";
+    mctx.lineWidth = 3;
+    mctx.lineJoin = "round";
+    mctx.beginPath();
+    pts.forEach((p, i) => (i ? mctx.lineTo : mctx.moveTo).call(mctx, ox + (p.x / T) * s, oy + (p.y / T) * s));
+    mctx.stroke();
     let tx = ox + (tg.x / T) * s,
       ty = oy + (tg.y / T) * s;
     tx = clamp(tx, 6, 234);
