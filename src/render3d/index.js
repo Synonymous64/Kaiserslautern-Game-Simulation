@@ -17,7 +17,7 @@ import { drawBubble } from "../render/sprites.js";
 import { label, LABELS } from "../render/buildings.js";
 import { buildCity } from "./city.js";
 import { createActors } from "./actors.js";
-import { CUT } from "./cutout.js";
+import { createXray } from "./xray.js";
 import { createCameraRig } from "./camera.js";
 import { createNav } from "./nav.js";
 
@@ -82,7 +82,7 @@ const WET_GROUND = C("#8d97a6");
 
 export async function create3D() {
   // throws when WebGL is unavailable; the caller then stays on the 2D view
-  const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
+  const renderer = new THREE.WebGLRenderer({ antialias: true, stencil: true, powerPreference: "high-performance" });
   renderer.toneMapping = THREE.NeutralToneMapping;
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFShadowMap;
@@ -96,6 +96,7 @@ export async function create3D() {
   scene.fog = new THREE.Fog(0xb7d3e6, 1000, 4000);
   scene.background = new THREE.Color(0xb7d3e6);
   const camera = new THREE.PerspectiveCamera(60, 1, 1, 8000);
+  const xray = createXray(renderer, scene, camera);
 
   const hemi = new THREE.HemisphereLight(0xd6e7f5, 0x5f6b4e, 1.6);
   const sun = new THREE.DirectionalLight(0xfff6e8, 2.6);
@@ -216,17 +217,13 @@ export async function create3D() {
     city.blitzEye.color.set(((now * 0.5) | 0) % 2 ? 0xc42222 : 0x3a0c0c);
     city.updateSignals();
 
-    // ---- see-through hole between camera and player (overview only; the
-    // chase camera moves in front of walls instead) ----
-    CUT.uCutOn.value = top && game.state !== "title" ? 1 : 0;
-    CUT.uCutTarget.value.set(q.x, 12, q.y);
-    CUT.uCutCam.value.copy(camera.position);
     city.signs.visible = !top; // upright signs in street views; flat labels from above
 
     const tg = game.state === "title" ? null : target();
     actors.update(view.focusX, view.focusZ, now, night, tg, game.state, view);
     const navInfo = nav.update(q, tg);
     renderer.render(scene, camera);
+    if (top && game.state !== "title") xray.render(actors.xrayTarget());
 
     // ---- 2D overlay ----
     ctx.setTransform(DPR, 0, 0, DPR, 0, 0);

@@ -82,7 +82,7 @@ src/
              view.js switches between the 2D and 3D renderer
   render3d/  3D view (three.js, loaded on demand): city.js (buildings,
              landmarks, trees, lamps, signals from the tile map), actors.js
-             (vehicles, people, pickups), cutout.js (see-through buildings),
+             (vehicles, people, pickups), xray.js (player outline through walls),
              textures.js, index.js (camera, day/night, weather, 2D overlay)
   ui/        feedback.js (toasts, dialog), phone.js, hud.js, menus.js
   styles/    base, landing, hud, overlays, touch (.css)

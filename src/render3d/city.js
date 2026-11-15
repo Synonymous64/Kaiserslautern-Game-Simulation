@@ -11,7 +11,6 @@ import { weather } from "../core/state.js";
 import { COL, drawRoadMarks, drawTiles, drawWith } from "../render/ground.js";
 import { drawJunctionMarks } from "../render/effects.js";
 import { facadeTextures, glowTexture, signTexture } from "./textures.js";
-import { withCutout } from "./cutout.js";
 
 export const STOREY = 20;
 const WORLD_W = MW * T,
@@ -158,7 +157,7 @@ function bakeGround(scale) {
   } finally {
     weather.wet = wet;
   }
-  // building footprints: a dark floor, not lawn (shows through see-through holes)
+  // building footprints: a dark floor, not lawn
   g.fillStyle = "#34373c";
   for (let y = 0; y < MH; y++)
     for (let x = 0; x < MW; x++) if (get(x, y) === BLD) g.fillRect(x * T, y * T, T + 0.6, T + 0.6);
@@ -248,7 +247,7 @@ function buildStreetSigns(poleMat) {
 
 export function buildCity(scene, renderer) {
   const hq = SETTINGS.quality !== "low";
-  const out = { cutMats: [] };
+  const out = {};
 
   // ---- ground ----
   const maxTex = renderer.capabilities.maxTextureSize;
@@ -297,11 +296,10 @@ export function buildCity(scene, renderer) {
 
   // ---- landmarks ----
   const lm = new THREE.Group();
-  const sand = withCutout(stdMat("#c9b08c")),
-    churchRoof = withCutout(stdMat("#7d3426")),
-    spireMat = withCutout(stdMat("#9c4130")),
+  const sand = stdMat("#c9b08c"),
+    churchRoof = stdMat("#7d3426"),
+    spireMat = stdMat("#9c4130"),
     darkMetal = stdMat("#2c3036", { roughness: 0.6 });
-  out.cutMats.push(sand, churchRoof, spireMat);
   for (const L of LANDMARKS) {
     const x = L.x1 * T,
       z = L.y1 * T,
@@ -343,8 +341,7 @@ export function buildCity(scene, renderer) {
     } else if (L.kind === "hall") {
       const wallCol = L.id === "frucht" ? "#dcb894" : "#8a8f99";
       walls.box(x, z, x + w, z + d, 0, 52, wallCol);
-      const rm = withCutout(stdMat(L.col));
-      out.cutMats.push(rm);
+      const rm = stdMat(L.col);
       lm.add(hipRoof(x, z, x + w, z + d, 52, 52 + Math.min(w, d) * 0.32, rm));
     } else if (L.kind === "station") {
       walls.box(x, z, x + w, z + d, 0, 42, "#9aa3ab", roofs, "#7f8a93");
@@ -360,9 +357,8 @@ export function buildCity(scene, renderer) {
 
   // Betzenberg stadium: four raked stands around the pitch, canopy, floodlights
   {
-    const red = withCutout(stdMat("#a52222")),
-      dark = withCutout(stdMat("#5a1414"));
-    out.cutMats.push(red, dark);
+    const red = stdMat("#a52222"),
+      dark = stdMat("#5a1414");
     const X0 = 3 * T,
       X1 = 24 * T,
       Z0 = 35 * T,
@@ -406,8 +402,7 @@ export function buildCity(scene, renderer) {
   }
   // Pfaff chimney
   {
-    const brick = withCutout(stdMat("#7a3426"));
-    out.cutMats.push(brick);
+    const brick = stdMat("#7a3426");
     const ch = new THREE.Mesh(new THREE.CylinderGeometry(7, 11, 190, 16), brick);
     ch.position.set(tc(38), 95, tc(22));
     ch.castShadow = true;
@@ -429,19 +424,16 @@ export function buildCity(scene, renderer) {
         walls.box(x * T, y * T, x * T + 6, y * T + T, 0, hh * 0.8, "#b39a7b", roofs, "#a38c70");
     }
 
-  const wallMat = withCutout(
-    new THREE.MeshStandardMaterial({
-      vertexColors: true,
-      map: facadeMap,
-      emissive: "#ffc477",
-      emissiveMap: facadeLit,
-      emissiveIntensity: 0,
-      roughness: 0.85,
-      metalness: 0,
-    }),
-  );
-  const roofMat = withCutout(new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.9, metalness: 0 }));
-  out.cutMats.push(wallMat, roofMat);
+  const wallMat = new THREE.MeshStandardMaterial({
+    vertexColors: true,
+    map: facadeMap,
+    emissive: "#ffc477",
+    emissiveMap: facadeLit,
+    emissiveIntensity: 0,
+    roughness: 0.85,
+    metalness: 0,
+  });
+  const roofMat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.9, metalness: 0 });
   out.wallMat = wallMat;
   scene.add(walls.mesh(wallMat), roofs.mesh(roofMat), lm);
 

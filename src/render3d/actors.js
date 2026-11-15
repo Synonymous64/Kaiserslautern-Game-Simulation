@@ -245,6 +245,8 @@ export function createActors(scene) {
   scene.add(player.root);
   let rider = makePerson(playerLook(false));
 
+  let vehRoot = null; // the model of the vehicle you are in (for the silhouette)
+
   // player ring
   const ring = new THREE.Mesh(
     new THREE.RingGeometry(10, 12.5, 28).rotateX(-Math.PI / 2),
@@ -333,9 +335,11 @@ export function createActors(scene) {
 
     // ---- vehicles (incl. the Ordnungsamt vans) ----
     cars.begin();
+    vehRoot = null;
     const syncVeh = (v) => {
       if (!near(v)) return;
       const o = cars.get(v);
+      if (v === P.veh && !P.onFoot) vehRoot = o.root;
       o.root.position.set(v.x, 0, v.y);
       o.root.rotation.y = -(v.ra ?? v.a);
       const active = !!(v.ai || v === P.veh || v.kind === "van");
@@ -461,5 +465,7 @@ export function createActors(scene) {
     fwGeo.attributes.position.needsUpdate = true;
     fwGeo.attributes.color.needsUpdate = true;
   }
-  return { update };
+  /** What the wall silhouette should outline: you on foot, or your vehicle. */
+  const xrayTarget = () => (P.onFoot ? player.root : vehRoot);
+  return { update, xrayTarget };
 }
