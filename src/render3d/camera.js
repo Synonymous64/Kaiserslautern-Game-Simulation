@@ -15,7 +15,8 @@ import { toast } from "../ui/feedback.js";
 import { bldHeight } from "./city.js";
 
 const TOP_FOV = 42,
-  TOP_PITCH = (58 * Math.PI) / 180;
+  // phones tilt a little more, so the closer view shows building fronts, not just roofs
+  TOP_PITCH = ((IS_TOUCH ? 52 : 58) * Math.PI) / 180;
 // driver's eye height per vehicle (above the bonnet, just under the roof)
 const EYE = { car: 19.5, taxi: 19.5, van: 23, bus: 27, tractor: 25, bike: 23, escooter: 24 };
 const PITCH0 = { chase: 0.3, fpv: 0.04 }; // default look-down angle per camera mode

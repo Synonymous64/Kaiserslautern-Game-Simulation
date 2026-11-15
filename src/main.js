@@ -64,7 +64,11 @@ function step(now) {
   }
 
   // ---- camera ----
-  const base = clamp(Math.min(W, H) / 720, 0.62, 1.1) * (W < 600 ? 0.92 : 1);
+  // phones: about 12 tiles across the short side, so the player and the street
+  // read clearly (the computer formula left a phone looking at a tiny map)
+  const base = coarse
+    ? clamp(Math.min(W, H) / 400, 0.85, 1.2)
+    : clamp(Math.min(W, H) / 720, 0.62, 1.1) * (W < 600 ? 0.92 : 1);
   if (game.state === "title") {
     const tt = (now / 1000) * 0.05;
     cam.x = tc(60) + Math.cos(tt) * T * 22;

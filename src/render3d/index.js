@@ -234,11 +234,18 @@ export async function create3D() {
     // in street views: only names that are near and not hidden behind buildings
     const seen = (x, h, y, r) =>
       top || (Math.hypot(x - camera.position.x, y - camera.position.z) < r && rig.visible(x, h, y));
-    if (top)
+    if (top) {
+      // a sign right over the player fades out so it never hides them at a junction
+      const me = project(q.x, 10, q.y);
       for (const sp of SIGN_SPOTS) {
         const p = project(sp.x, 0, sp.y);
-        if (p && p.x > -100 && p.x < W + 100 && p.y > -20 && p.y < H + 20) drawStreetSign(sp.n, p.x, p.y);
+        if (!p || p.x < -100 || p.x > W + 100 || p.y < -20 || p.y > H + 20) continue;
+        const near = me ? Math.hypot((p.x - me.x) / 1.6, p.y - me.y) : 999;
+        ctx.globalAlpha = near < 60 ? 0.18 + 0.82 * Math.max(0, (near - 30) / 30) : 1;
+        drawStreetSign(sp.n, p.x, p.y);
       }
+      ctx.globalAlpha = 1;
+    }
     for (const [n, x, y] of LABELS) {
       const key = typeof n === "string" ? n : n.en;
       const lh = LABEL_H[key] ?? 30;
