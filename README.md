@@ -14,7 +14,7 @@ Ordnungsamt and make kickoff on the Betzenberg.
 - A calm generative soundtrack that follows the time of day and the weather
 - **3D view** (three.js) or the classic top-down 2D view, switchable in the
   settings (*View: 3D / 2D*); in 3D a chase camera, first person or from above
-- Sat-nav: the route along the streets on the minimap, plus a compass and a waypoint pin in 3D
+- Sat-nav: the route along the streets on the minimap, an arrow at the screen edge pointing to the objective, and a waypoint pin in 3D
 - A living street: drivers brake, honk and shout when you step in front of
   them, jaywalkers answer back, people chat with each other and react when you
   bump into them; lamp posts, traffic lights, trees and cars are solid

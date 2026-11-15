@@ -4,10 +4,10 @@
 // transparent overlay for labels, speech bubbles, the objective arrow, rain
 // and colour grading. Loaded on demand (see render/view.js).
 import * as THREE from "three";
-import { IS_TOUCH, SETTINGS, tr } from "../core/i18n.js";
-import { $, clamp, T, tc } from "../core/utils.js";
+import { SETTINGS, tr } from "../core/i18n.js";
+import { clamp, T, tc } from "../core/utils.js";
 import { POIS, SIGN_SPOTS } from "../world/world.js";
-import { bubbles, cam, camView, game, weather } from "../core/state.js";
+import { bubbles, cam, game, weather } from "../core/state.js";
 import { pos } from "../ui/feedback.js";
 import { ctx, cv, DPR, drawStreetSign, H, rr, W } from "../render/ground.js";
 import { drawGrade } from "../render/effects.js";
@@ -261,84 +261,30 @@ export async function create3D() {
       const p = project(bb.o.x, 24, bb.o.y);
       if (p) drawBubble(p.x, p.y + 8, tr(bb.text));
     }
-    // street cameras get the compass + pin; from above the edge arrow and beam suffice
-    // street cameras: compass + waypoint pin; from above: the edge arrow (+ beam)
-    const street = !top && tg && navInfo;
+    // the objective: an arrow at the screen edge pointing the way (all cameras);
+    // in the street cameras also a pin with the distance when it is on screen
     if (tg) {
-      if (top) drawObjectiveArrow(tg, q, ...screenOf(tg), navInfo?.dist);
-      else if (street) {
+      drawObjectiveArrow(tg, q, ...screenOf(tg), navInfo?.dist);
+      if (!top && navInfo) {
         const pin = project(tg.x, 70, tg.y);
         if (pin && pin.x > 0 && pin.x < W && pin.y > 0 && pin.y < H) waypointPin(pin.x, pin.y, navInfo.dist);
       }
     }
     drawGrade();
-    if (street) compass(q, navInfo, tg);
   }
 
-  /** Screen position of a ground point; behind the camera → far off the bottom edge. */
+  /**
+   * Screen position of a ground point. Behind the camera it can't be projected,
+   * so return a point far off screen in the direction it lies (left/right, down),
+   * which puts the edge arrow on the matching side.
+   */
   function screenOf(t) {
     const p = project(t.x, 0, t.y);
     if (p) return [p.x, p.y];
-    v.set(t.x, 0, t.y).applyMatrix4(camera.matrixWorldInverse);
-    return [W / 2 + Math.sign(v.x || 1) * W, H * 2];
-  }
-
-  /** Where the compass sits: just below the whole top HUD (it grows while the mission briefing is open). */
-  function compassAt() {
-    const mini = $("mini").getBoundingClientRect(),
-      top = document.querySelector(".hud-top").getBoundingClientRect();
-    if (IS_TOUCH && W > H) {
-      // phone sideways: the thumb buttons own the right edge, so use the top
-      // centre (under the mission briefing while it is open)
-      const obj = $("hObj");
-      const y = obj.hidden ? top.top : obj.getBoundingClientRect().bottom;
-      return { ok: mini.width > 0, cx: W / 2, cy: y + 36 };
-    }
-    return { ok: mini.width > 0, cx: Math.min(mini.left + mini.width / 2, W - 92), cy: top.bottom + 40 };
-  }
-
-  /** Sat-nav compass under the minimap: which way to go now, how far, where to. */
-  function compass(q, nav, tg) {
-    const { ok, cx, cy } = compassAt();
-    if (!ok) return;
-    const R = 26;
-    const world = Math.atan2(nav.ahead.y - q.y, nav.ahead.x - q.x);
-    const a = world - camView.forward - Math.PI / 2; // screen angle (up = where the camera looks)
-    ctx.save();
-    ctx.fillStyle = "rgba(10,18,14,.78)";
-    ctx.strokeStyle = "rgba(242,194,48,.9)";
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.arc(cx, cy, R, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.stroke();
-    ctx.translate(cx, cy);
-    ctx.rotate(a);
-    ctx.fillStyle = "#f2c230";
-    ctx.beginPath();
-    ctx.moveTo(18, 0);
-    ctx.lineTo(-10, -12);
-    ctx.lineTo(-4, 0);
-    ctx.lineTo(-10, 12);
-    ctx.closePath();
-    ctx.fill();
-    ctx.restore();
-    const name = tg.name || "";
-    ctx.font = '700 13px "IBM Plex Mono",monospace';
-    ctx.textAlign = "center";
-    ctx.textBaseline = "top";
-    ctx.lineWidth = 3;
-    ctx.strokeStyle = "rgba(0,0,0,.75)";
-    ctx.fillStyle = "#fff";
-    const d = fmtDist(nav.dist);
-    ctx.strokeText(d, cx, cy + R + 6);
-    ctx.fillText(d, cx, cy + R + 6);
-    if (name) {
-      ctx.font = '600 12px "Atkinson Hyperlegible",sans-serif';
-      const s = name.length > 26 ? name.slice(0, 25) + "…" : name;
-      ctx.strokeText(s, cx, cy + R + 23);
-      ctx.fillText(s, cx, cy + R + 23);
-    }
+    v.set(t.x, 0, t.y).applyMatrix4(camera.matrixWorldInverse); // x: right, z: behind
+    const len = Math.hypot(v.x, v.z) || 1,
+      far = 4 * Math.max(W, H);
+    return [W / 2 + (v.x / len) * far, H / 2 + (Math.abs(v.z) / len) * far];
   }
 
   function setActive(on) {
