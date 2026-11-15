@@ -61,35 +61,57 @@ export function cycleCamera() {
   $("bCam").classList.remove("hint-pulse");
   saveSettings();
   toast(CAM_NAME[SETTINGS.camera](), 1600);
-  // only when leaving the overview for a street view (not behind → first person)
-  if (prev === "top" && SETTINGS.camera !== "top") suggestLandscape();
+  // phones: behind the player / first person play sideways; from above, upright
+  if (SETTINGS.camera === "top") releaseLandscape();
+  else goLandscape();
 }
 
 // ---------- phones: street views work best sideways ----------
 const portrait = () => innerHeight > innerWidth;
+const canLock = () => !!(document.documentElement.requestFullscreen && screen.orientation && screen.orientation.lock);
 let rotateT = 0,
-  landscapeTipShown = false;
+  landscapeTipShown = false,
+  weLocked = false;
 function hideRotateHint() {
   clearTimeout(rotateT);
   $("rotateHint").hidden = true;
 }
-/** On a phone held upright, suggest turning it for the street cameras (a few seconds). */
-function suggestLandscape() {
+/** Fullscreen + lock the screen sideways (needs a tap: the camera button is one). */
+async function lockLandscape() {
+  if (!document.fullscreenElement) await document.documentElement.requestFullscreen({ navigationUI: "hide" });
+  await screen.orientation.lock("landscape");
+  weLocked = true;
+}
+/**
+ * Switching a phone to a street camera: flip the screen to landscape right
+ * away where the browser allows it (Android); otherwise (iPhone) show a card
+ * asking to turn the phone, for a few seconds.
+ */
+function goLandscape() {
   if (!IS_TOUCH || !portrait()) return;
-  const el = $("rotateHint");
-  // Android Chrome can go fullscreen and turn the screen itself; iPhones can't
-  const canLock = !!(document.documentElement.requestFullscreen && screen.orientation && screen.orientation.lock);
-  $("rotateGo").hidden = !canLock;
-  el.hidden = false;
+  if (canLock())
+    lockLandscape().catch(() => showRotateHint()); // e.g. the browser refused: ask instead
+  else showRotateHint();
+}
+function showRotateHint() {
+  $("rotateGo").hidden = !canLock();
+  $("rotateHint").hidden = false;
   clearTimeout(rotateT);
   rotateT = setTimeout(hideRotateHint, 4500);
 }
-$("rotateGo").addEventListener("click", async () => {
+/** Back to the view from above: let the phone rotate freely again. */
+function releaseLandscape() {
   hideRotateHint();
+  if (!weLocked) return;
+  weLocked = false;
   try {
-    await document.documentElement.requestFullscreen({ navigationUI: "hide" });
-    await screen.orientation.lock("landscape");
+    screen.orientation.unlock();
   } catch (e) {}
+  if (document.fullscreenElement && document.exitFullscreen) document.exitFullscreen().catch(() => {});
+}
+$("rotateGo").addEventListener("click", () => {
+  hideRotateHint();
+  lockLandscape().catch(() => {});
 });
 $("rotateHint").addEventListener("click", (e) => {
   if (e.target.id !== "rotateGo") hideRotateHint();
