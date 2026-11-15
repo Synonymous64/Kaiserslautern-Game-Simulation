@@ -147,8 +147,21 @@ function playBell(ch, t) {
   }
 }
 
-/** Called every frame from the main loop. */
-export function musicUpdate(dt) {
+// The score runs on its own clock, not the game loop: a heavy frame (opening
+// the phone, starting a job, a burst of new 3D people) or an error elsewhere in
+// a frame must never make the music drop out.
+let lastTick = 0;
+setInterval(() => {
+  const t = performance.now();
+  const dt = Math.min(0.5, (t - (lastTick || t)) / 1000);
+  lastTick = t;
+  try {
+    musicUpdate(dt);
+  } catch (e) {}
+}, 200);
+
+/** Fades, chords and bells; ticked five times a second by the clock above. */
+function musicUpdate(dt) {
   if (!AC || AC.state !== "running") return;
   let target = 0;
   if (MUSIC.on && soundOn) {
@@ -172,8 +185,8 @@ export function musicUpdate(dt) {
     MUSIC.next = now + 0.3; // idle: schedule nothing while silent
     return;
   }
-  // chords: schedule just ahead so they land seamlessly
-  if (now + 0.4 >= MUSIC.next) {
+  // chords: schedule well ahead so slow frames can never leave a gap
+  if (now + 1.5 >= MUSIC.next) {
     const prog = MUSIC.night ? PROG_NIGHT : PROG_DAY,
       dur = MUSIC.night ? 10 : 8;
     const t = Math.max(MUSIC.next, now + 0.05);

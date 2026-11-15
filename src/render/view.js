@@ -54,13 +54,15 @@ const CAM_NAME = {
 /** V key / camera button: behind → first person → from above → … (3D only). */
 export function cycleCamera() {
   if (!is3d()) return;
-  const i = CAMS.indexOf(SETTINGS.camera);
+  const prev = SETTINGS.camera;
+  const i = CAMS.indexOf(prev);
   SETTINGS.camera = CAMS[(i + 1) % CAMS.length];
   SETTINGS.camPicked = true;
   $("bCam").classList.remove("hint-pulse");
   saveSettings();
   toast(CAM_NAME[SETTINGS.camera](), 1600);
-  if (SETTINGS.camera !== "top") suggestLandscape();
+  // only when leaving the overview for a street view (not behind → first person)
+  if (prev === "top" && SETTINGS.camera !== "top") suggestLandscape();
 }
 
 // ---------- phones: street views work best sideways ----------

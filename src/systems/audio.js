@@ -3,31 +3,75 @@ import { saveSettings, SETTINGS } from "../core/i18n.js";
 import { clamp } from "../core/utils.js";
 import { VT } from "../world/vehicles.js";
 import { game, P, weather } from "../core/state.js";
-import { musicKick } from "./music.js";
+import { MUSIC, musicKick } from "./music.js";
 
 export let AC = null,
   soundOn = SETTINGS.sound,
   rainNode = null;
 // Every sound goes through one master gain, so Sound On/Off is instant.
-let masterOut = null;
+let masterOut = null,
+  probe = null,
+  probeBuf = null;
 export function OUT() {
   if (!masterOut) {
     masterOut = AC.createGain();
     masterOut.gain.value = soundOn ? 1 : 0;
     masterOut.connect(AC.destination);
+    // a silent tap on the mix, so the watchdog below can spot a broken graph
+    probe = AC.createAnalyser();
+    probe.fftSize = 256;
+    probeBuf = new Float32Array(probe.fftSize);
+    masterOut.connect(probe);
   }
   return masterOut;
 }
+function resetAudioGraph() {
+  try {
+    masterOut.disconnect();
+  } catch (e) {}
+  masterOut = null;
+  eng = null;
+  rainNode = null;
+  MUSIC.master = MUSIC.tone = MUSIC.bus = null; // music builds fresh nodes on its next tick
+  rainSound(weather.rain && game.state !== "title");
+}
+
+// ---- keep the sound alive ----
+// Phones pause web audio when something else takes over for a moment (a
+// screenshot, a notification, a call): resume as soon as we are visible again.
+const resume = () => {
+  const p = AC.resume();
+  if (p && p.catch) p.catch(() => {});
+};
+function wake() {
+  if (AC && AC.state !== "running" && AC.state !== "closed" && !document.hidden) resume();
+}
+for (const ev of ["pointerdown", "touchstart", "keydown"]) addEventListener(ev, wake, { capture: true, passive: true });
+setInterval(() => {
+  wake();
+  // One NaN in any node (e.g. from a wild crash) silences the whole mix for
+  // good. If the mix ever reads NaN, rebuild it from scratch.
+  if (!probe || !AC || AC.state !== "running") return;
+  probe.getFloatTimeDomainData(probeBuf);
+  for (let i = 0; i < probeBuf.length; i += 8)
+    if (!Number.isFinite(probeBuf[i])) {
+      resetAudioGraph();
+      break;
+    }
+}, 1500);
+
 export function audio() {
   if (!AC) {
     try {
       AC = new (window.AudioContext || window.webkitAudioContext)();
+      AC.onstatechange = wake;
     } catch (e) {}
   }
-  if (AC && AC.state === "suspended") AC.resume();
+  if (AC && AC.state === "suspended") resume();
 }
+const finite = (...xs) => xs.every((x) => x === undefined || Number.isFinite(x));
 function tone(f, d, type = "sine", vol = 0.12, f2) {
-  if (!AC || !soundOn) return;
+  if (!AC || !soundOn || !finite(f, d, vol, f2) || vol <= 0) return; // never feed NaN into the graph
   const o = AC.createOscillator(),
     g = AC.createGain();
   o.type = type;
@@ -132,7 +176,7 @@ function getNoise() {
   return noiseBuf;
 }
 function noiseBurst(dur, freq, vol) {
-  if (!AC || !soundOn) return;
+  if (!AC || !soundOn || !finite(dur, freq, vol) || vol <= 0) return;
   const s = AC.createBufferSource(),
     f = AC.createBiquadFilter(),
     g = AC.createGain();
@@ -155,6 +199,9 @@ const ENGINE = {
   van: { wave: "sawtooth", base: 30, span: 55, vol: 0.05, gears: [0, 90, 170, 250] },
   bus: { wave: "sawtooth", base: 24, span: 36, vol: 0.06, gears: [0, 70, 140, 200] },
   tractor: { wave: "square", base: 22, span: 22, vol: 0.035, gears: [0, 70] },
+  sports: { wave: "sawtooth", base: 46, span: 96, vol: 0.055, gears: [0, 110, 210, 300, 380] }, // high revving
+  muscle: { wave: "square", base: 26, span: 58, vol: 0.05, gears: [0, 100, 190, 280, 350] }, // deep V8 rumble
+  cabrio: { wave: "sawtooth", base: 38, span: 70, vol: 0.05, gears: [0, 90, 175, 255, 320] },
   escooter: { wave: "sine", base: 240, span: 420, vol: 0.025, gears: [0] },
 };
 let eng = null;
@@ -199,6 +246,7 @@ export function engineUpdate(skid) {
     eng.wave = spec.wave;
   }
   const sp = Math.abs(v.speed);
+  if (!Number.isFinite(sp) || !Number.isFinite(skid)) return;
   // rpm rises through each gear, then drops on the shift
   let gi = 0;
   for (let i = 0; i < spec.gears.length; i++) if (sp >= spec.gears[i]) gi = i;
@@ -208,7 +256,7 @@ export function engineUpdate(skid) {
   eng.o.frequency.setTargetAtTime(spec.base + rpm * spec.span, t, 0.05);
   eng.f.frequency.setTargetAtTime(300 + rpm * 900, t, 0.08);
   eng.g.gain.setTargetAtTime(spec.vol * (0.55 + 0.45 * rpm), t, 0.08);
-  eng.ng.gain.setTargetAtTime(skid * 0.07, t, 0.04);
+  eng.ng.gain.setTargetAtTime(clamp(skid, 0, 1) * 0.07, t, 0.04);
 }
 
 // Silence everything while the tab is hidden (rAF stops, oscillators would not).

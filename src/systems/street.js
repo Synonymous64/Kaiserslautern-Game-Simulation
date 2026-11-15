@@ -66,9 +66,12 @@ export function footStepBlocked(ox, oy, nx, ny, r = 7) {
   const g = carGap(nx, ny, r);
   return g < r && g < carGap(ox, oy, r + 30);
 }
-/** Pedestrians walk around poles and cars. */
-export function pedBlocked(x, y) {
-  return !!poleAt(x, y, 5) || carGap(x, y, 6) < 6;
+/** Pedestrians walk around poles and cars, but can always step away from one they touch. */
+export function pedStepBlocked(ox, oy, nx, ny) {
+  const p = poleAt(nx, ny, 5);
+  if (p && Math.hypot(nx - p[0], ny - p[1]) < Math.hypot(ox - p[0], oy - p[1])) return true;
+  const g = carGap(nx, ny, 6);
+  return g < 6 && g < carGap(ox, oy, 40);
 }
 
 // ---------- little timeline for staged reactions ----------

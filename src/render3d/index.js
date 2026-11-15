@@ -20,7 +20,6 @@ import { createActors } from "./actors.js";
 import { CUT } from "./cutout.js";
 import { createCameraRig } from "./camera.js";
 import { createNav } from "./nav.js";
-import { HUD_SAFE } from "../ui/hud.js";
 
 /** World px → "350 m" / "1.2 km" (same scale as the 2D arrow: one tile = 25 m). */
 const fmtDist = (px) => {
@@ -263,23 +262,25 @@ export async function create3D() {
       if (p) drawBubble(p.x, p.y + 8, tr(bb.text));
     }
     // street cameras get the compass + pin; from above the edge arrow and beam suffice
+    // street cameras: compass + waypoint pin; from above: the edge arrow (+ beam)
     const street = !top && tg && navInfo;
-    if (street) HUD_SAFE.top = Math.max(HUD_SAFE.top, compassBottom() + 24); // edge arrow stays clear of it
     if (tg) {
-      const p = project(tg.x, 0, tg.y);
-      if (p) {
-        drawObjectiveArrow(tg, q, p.x, p.y, navInfo?.dist);
-        // on screen: a waypoint pin with the distance, above the beam
+      if (top) drawObjectiveArrow(tg, q, ...screenOf(tg), navInfo?.dist);
+      else if (street) {
         const pin = project(tg.x, 70, tg.y);
-        if (street && pin && pin.x > 0 && pin.x < W && pin.y > 0 && pin.y < H) waypointPin(pin.x, pin.y, navInfo.dist);
-      } else {
-        // behind the camera: point left/right towards it, along the bottom edge
-        v.set(tg.x, 0, tg.y).applyMatrix4(camera.matrixWorldInverse);
-        drawObjectiveArrow(tg, q, W / 2 + Math.sign(v.x || 1) * W, H * 2, navInfo?.dist);
+        if (pin && pin.x > 0 && pin.x < W && pin.y > 0 && pin.y < H) waypointPin(pin.x, pin.y, navInfo.dist);
       }
     }
     drawGrade();
     if (street) compass(q, navInfo, tg);
+  }
+
+  /** Screen position of a ground point; behind the camera → far off the bottom edge. */
+  function screenOf(t) {
+    const p = project(t.x, 0, t.y);
+    if (p) return [p.x, p.y];
+    v.set(t.x, 0, t.y).applyMatrix4(camera.matrixWorldInverse);
+    return [W / 2 + Math.sign(v.x || 1) * W, H * 2];
   }
 
   /** Where the compass sits: just below the whole top HUD (it grows while the mission briefing is open). */
@@ -295,7 +296,6 @@ export async function create3D() {
     }
     return { ok: mini.width > 0, cx: Math.min(mini.left + mini.width / 2, W - 92), cy: top.bottom + 40 };
   }
-  const compassBottom = () => compassAt().cy + 26 + 40; // dial + distance + name
 
   /** Sat-nav compass under the minimap: which way to go now, how far, where to. */
   function compass(q, nav, tg) {

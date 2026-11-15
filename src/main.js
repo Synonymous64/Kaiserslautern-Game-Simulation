@@ -5,7 +5,6 @@ import { $, clamp, T, tc } from "./core/utils.js";
 import { advanceSignals } from "./world/traffic-lights.js";
 import { cam, game, load, P, resetProgress, START_POS } from "./core/state.js";
 import { audio, engineUpdate } from "./systems/audio.js";
-import { musicUpdate } from "./systems/music.js";
 import { L2 } from "./data/text.js";
 import { MISSIONS } from "./data/missions.js";
 import { M, offerMission, updateMission } from "./systems/missions.js";
@@ -57,7 +56,6 @@ function step(now) {
   if (game.flashFx > 0) game.flashFx -= dt;
   if (game.blitzCd > 0) game.blitzCd -= dt;
   engineUpdate(P.onFoot ? 0 : game.skidLevel);
-  musicUpdate(dt);
   updateFeedback(dt);
   // touch controls only while actually driving/walking
   if (coarse) {

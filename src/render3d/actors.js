@@ -130,6 +130,49 @@ function makeVehicle(v) {
     o.cone = part(coneGeo, coneMat, L / 2, 0.9, 0, root, false);
     return o;
   }
+  // ---- the cool cars ----
+  if (v.type === "sports") {
+    // low and wide, small glasshouse, rear wing
+    wheels(4.2, 3.4, [L * 0.3, -L * 0.3], [Wd / 2 - 1.5, -Wd / 2 + 1.5]);
+    part(box(L, 6, Wd), paint, 0, 6.5, 0, root);
+    part(box(L * 0.36, 4.6, Wd * 0.78), GLASS, -L * 0.06, 11.6, 0, root);
+    part(box(L * 0.28, 0.9, Wd * 0.74), paint, -L * 0.08, 14.3, 0, root);
+    part(box(L * 0.22, 0.5, Wd * 0.6), DARK, L * 0.26, 9.6, 0, root); // bonnet vent
+    for (const z of [Wd * 0.3, -Wd * 0.3]) part(box(1, 3, 1), DARK, -L * 0.44, 11, z, root);
+    part(box(4, 0.8, Wd * 0.94), DARK, -L * 0.45, 12.8, 0, root); // wing
+    Object.assign(o, lightsFor(root, L, Wd, 7.5, 0.34));
+    o.cone = part(coneGeo, coneMat, L / 2, 0.9, 0, root, false);
+    return o;
+  }
+  if (v.type === "muscle") {
+    // long bonnet with a scoop, twin racing stripes over the whole car
+    wheels(4.6, 3.6, [L * 0.3, -L * 0.3], [Wd / 2 - 1.5, -Wd / 2 + 1.5]);
+    part(box(L, 8, Wd), paint, 0, 8.5, 0, root);
+    part(box(L * 0.4, 6, Wd * 0.82), GLASS, -L * 0.13, 15.5, 0, root);
+    part(box(L * 0.32, 1.2, Wd * 0.78), paint, -L * 0.14, 18.9, 0, root);
+    part(box(6, 2, 6), DARK, L * 0.2, 13.4, 0, root); // scoop
+    const stripe = mat("#f5f5f5");
+    for (const z of [2.2, -2.2]) {
+      part(box(L + 0.2, 0.3, 2.2), stripe, 0, 12.6, z, root, false);
+      part(box(L * 0.32, 0.3, 2.2), stripe, -L * 0.14, 19.6, z, root, false);
+    }
+    Object.assign(o, lightsFor(root, L, Wd, 9.5));
+    o.cone = part(coneGeo, coneMat, L / 2, 0.9, 0, root, false);
+    return o;
+  }
+  if (v.type === "cabrio") {
+    // open top: raked windscreen, two seats, no roof
+    wheels(4, 3, [L * 0.3, -L * 0.3], [Wd / 2 - 1.5, -Wd / 2 + 1.5]);
+    part(box(L, 7, Wd), paint, 0, 7.5, 0, root);
+    part(box(L * 0.42, 1, Wd * 0.84), mat("#3a2a22"), -L * 0.06, 11.2, 0, root); // interior
+    for (const z of [Wd * 0.21, -Wd * 0.21]) part(box(4, 6, 5.5), mat("#4a3a30"), -L * 0.12, 13.5, z, root);
+    const ws = part(box(1, 5.5, Wd * 0.84), GLASS, L * 0.13, 13.6, 0, root);
+    ws.rotation.z = 0.45;
+    o.riderSlot = { x: -L * 0.12, y: 5.5, z: -Wd * 0.21, sit: true }; // you can see the driver
+    Object.assign(o, lightsFor(root, L, Wd, 8.5));
+    o.cone = part(coneGeo, coneMat, L / 2, 0.9, 0, root, false);
+    return o;
+  }
   // cars, taxis, enforcement vans
   const van = v.type === "van";
   const r = van ? 4.5 : 4;
@@ -307,7 +350,7 @@ export function createActors(scene) {
         const riding = P.veh === v && !P.onFoot;
         if (riding && rider.root.parent !== o.root) {
           o.root.add(rider.root);
-          rider.root.position.set(o.riderSlot.x, o.riderSlot.y, 0);
+          rider.root.position.set(o.riderSlot.x, o.riderSlot.y, o.riderSlot.z || 0);
           rider.root.rotation.set(0, 0, 0);
           const bend = o.riderSlot.sit ? 1.1 : 0;
           rider.legL.rotation.z = rider.legR.rotation.z = bend;

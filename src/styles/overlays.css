@@ -5,7 +5,10 @@
   position: fixed;
   inset: 0;
   display: grid;
-  place-items: center;
+  /* centred with auto margins (not place-items) so a card taller than the
+     screen, e.g. on a phone held sideways, can still be scrolled to the top */
+  justify-items: center;
+  align-items: start;
   padding: calc(16px + var(--sat)) calc(16px + var(--sar)) calc(16px + var(--sab)) calc(16px + var(--sal));
   background: radial-gradient(circle at 50% 40%, rgba(8, 16, 12, 0.55), rgba(8, 16, 12, 0.85));
   -webkit-backdrop-filter: blur(3px);
@@ -14,6 +17,9 @@
   overflow-y: auto;
   touch-action: pan-y;
   animation: ovIn 0.25s ease-out;
+}
+.overlay > * {
+  margin-block: auto;
 }
 @keyframes ovIn {
   from {
@@ -265,10 +271,36 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 4px 18px 8px;
+  gap: 10px;
+  padding: 4px 10px 8px 18px;
   font-family: var(--f-mono);
   font-size: 12px;
   color: var(--muted);
+}
+.ph-top span:nth-child(2) {
+  margin-left: auto;
+}
+.ph-x {
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border-radius: 50%;
+  background: rgba(244, 239, 230, 0.1);
+  border: 1px solid var(--line);
+}
+.ph-x svg {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 2.4;
+  stroke-linecap: round;
+}
+.ph-x:hover,
+.ph-x:active {
+  background: rgba(244, 239, 230, 0.22);
 }
 .ph-tabs {
   display: grid;
@@ -445,6 +477,22 @@
   .card {
     padding: 16px;
     gap: 10px;
+  }
+  /* phone sideways: settings side by side so the whole pause menu fits */
+  .pausecard {
+    width: min(720px, 100%);
+  }
+  .pausecard h2 {
+    font-size: 24px;
+    margin: 0;
+  }
+  .pausecard .settings {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px 22px;
+  }
+  .pausecard .set-row {
+    padding: 2px 0;
   }
 }
 

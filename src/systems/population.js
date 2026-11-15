@@ -10,7 +10,7 @@ import { pos } from "../ui/feedback.js";
 import { addAerger } from "./aerger.js";
 import { onCrash } from "./actions.js";
 import { darkness } from "../render/maps.js";
-import { pedBlocked, pedBumped } from "./street.js";
+import { pedBumped, pedStepBlocked } from "./street.js";
 
 export const SKIN = ["#f6d5b8", "#f1c9a5", "#e6b98f", "#d9a57b", "#c18a5e", "#a8714a", "#8a5a36", "#7a4b2c", "#5c3a21", "#3f2716"];
 const HAIR = ["#2b1d14", "#4a3020", "#8a6a3a", "#c9a46a", "#1a1a1a", "#9a9a9a"];
@@ -108,14 +108,40 @@ export function updatePeds(dt) {
       const nx = p.x + Math.cos(p.a) * sp * dt,
         ny = p.y + Math.sin(p.a) * sp * dt;
       const ok = walkableP(nx, ny) || (tileAtPx(nx, ny) === ROAD && (p.cross || onRoad));
-      if (ok && !pedBlocked(nx, ny)) {
+      if (ok && !pedStepBlocked(p.x, p.y, nx, ny)) {
         p.x = nx;
         p.y = ny;
+        p.stuck = 0;
         if (onRoad && walkableP(p.x, p.y)) p.cross = false; // made it across
       } else if (p.cross && ok) {
         // a car is in the way: wait for it instead of turning back
-      } else {
-        p.a += Math.PI * (0.5 + Math.random());
+      } else if (!(p.turnCd > 0)) {
+        // blocked: pick a heading that is actually free (no spinning on the spot);
+        // if every way is blocked, stand still for a moment instead
+        const base = p.a + Math.PI * (0.5 + Math.random());
+        let found = false;
+        for (let k = 0; k < 8 && !found; k++) {
+          const a = base + (k * Math.PI) / 4,
+            tx = p.x + Math.cos(a) * 10,
+            ty = p.y + Math.sin(a) * 10;
+          const walk = walkableP(tx, ty) || (tileAtPx(tx, ty) === ROAD && onRoad);
+          if (walk && !pedStepBlocked(p.x, p.y, tx, ty)) {
+            p.a = a;
+            found = true;
+          }
+        }
+        if (!found) {
+          p.stand = true;
+          p.t = 1 + Math.random() * 2;
+        }
+        p.turnCd = 0.8;
+      }
+      if (p.turnCd > 0) p.turnCd -= dt;
+      // boxed in for a while (e.g. a car parked on top of them): someone else takes their place
+      if (!ok || p.turnCd > 0) p.stuck = (p.stuck || 0) + dt;
+      if (p.stuck > 6) {
+        peds.splice(i, 1);
+        continue;
       }
     }
     if (!P.onFoot) {

@@ -53,6 +53,19 @@ document.querySelectorAll(".ph-tabs button").forEach((b) =>
   }),
 );
 $("phClose").addEventListener("click", closePhone);
+$("phX").addEventListener("click", closePhone);
+// tapping anywhere outside the phone puts it away (not the button that opens it,
+// and not the thumb controls, so you can keep walking while it is open)
+addEventListener(
+  "pointerdown",
+  (e) => {
+    if (game.state !== "phone") return;
+    const t = e.target;
+    if (t.closest && (t.closest("#phone") || t.closest("#bPhone") || t.closest("#touch"))) return;
+    closePhone();
+  },
+  true,
+);
 
 function renderPhone() {
   if ($("phone").hidden) return;

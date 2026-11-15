@@ -71,6 +71,37 @@ export const VT = {
     brake: 420,
     colors: ["#3f7a3a"],
   },
+  // ---- the cool ones (parked around town, now and then in traffic) ----
+  sports: {
+    name: { en: "Sports car", de: "Sportwagen" },
+    max: 430,
+    acc: 430,
+    turn: 2.8,
+    len: 42,
+    wid: 20,
+    brake: 600,
+    colors: ["#e10600", "#ffcc00", "#1e88e5", "#111111", "#ff6d00", "#00c853"],
+  },
+  muscle: {
+    name: { en: "Muscle car", de: "Muscle-Car" },
+    max: 400,
+    acc: 380,
+    turn: 2.3,
+    len: 46,
+    wid: 22,
+    brake: 520,
+    colors: ["#ff3d00", "#212121", "#1565c0", "#fdd835", "#2e7d32"],
+  },
+  cabrio: {
+    name: { en: "Convertible", de: "Cabrio" },
+    max: 360,
+    acc: 310,
+    turn: 2.7,
+    len: 40,
+    wid: 19,
+    brake: 540,
+    colors: ["#d50000", "#00bfa5", "#f5f5f5", "#ff4081", "#3949ab"],
+  },
   van: {
     name: { en: "Enforcement van", de: "Ordnungsamt-Bus" },
     max: 290,
@@ -193,7 +224,7 @@ function spawnTraffic(type) {
   return v;
 }
 for (let i = 0; i < 30; i++)
-  spawnTraffic(i < 2 ? "bus" : i < 4 ? "taxi" : "car");
+  spawnTraffic(i < 2 ? "bus" : i < 4 ? "taxi" : i < 7 ? ["sports", "muscle", "cabrio"][i - 4] : "car");
 // parked
 const parked = [
   ["bike", 60, 68, 0],
@@ -211,6 +242,12 @@ const parked = [
   ["escooter", 96, 12, 0],
   ["car", 36, 67.5, 0],
   ["bike", 84, 41, Math.PI / 2],
+  // cool cars to find: station car park, stadium car park, campus
+  ["sports", 78, 69, 0],
+  ["muscle", 70, 69, 0],
+  ["cabrio", 22, 50, 0],
+  ["sports", 10, 50, 0],
+  ["muscle", 113, 84, 0],
 ];
 for (const [t, x, y, a] of parked) {
   const v = mkVeh(t, tc(x), tc(y), a);

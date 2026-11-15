@@ -152,6 +152,18 @@ export function drawVeh(v) {
       ctx.textBaseline = "middle";
       ctx.fillText("TAXI", 0, 0.5);
     }
+    // the cool cars
+    if (v.type === "muscle") {
+      ctx.fillStyle = "rgba(245,245,245,.85)";
+      ctx.fillRect(-L / 2, -3.5, L, 2);
+      ctx.fillRect(-L / 2, 1.5, L, 2);
+    } else if (v.type === "sports") {
+      ctx.fillStyle = "#1a1a1a";
+      ctx.fillRect(-L / 2 - 1, -Wd / 2 + 1, 3, Wd - 2); // rear wing
+    } else if (v.type === "cabrio") {
+      ctx.fillStyle = "#3a2a22"; // open top
+      ctx.fillRect(-L * 0.26, -Wd / 2 + 3, L * 0.38, Wd - 6);
+    }
     if (v.type === "van") {
       ctx.fillStyle = "#1d4f9c";
       ctx.fillRect(-L / 2, -1.5, L, 3);
