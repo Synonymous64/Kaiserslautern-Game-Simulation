@@ -12,71 +12,79 @@ Ordnungsamt and make kickoff on the Betzenberg.
 - Day/night cycle, weather and wet roads, traffic lights, a speed camera,
   drifting, engine sound
 - A calm generative soundtrack that follows the time of day and the weather
-- Static files only: no build step, no backend, no dependencies
+- Plain JavaScript modules built with [Vite](https://vite.dev): no framework,
+  no backend, no runtime dependencies
 
 ## Play locally
 
-Open `index.html` directly in a browser, or serve the folder (needed for
-offline/PWA features):
+Needs [Node.js](https://nodejs.org) 20.19 or newer.
 
 ```bash
-npx serve .          # or: npm start
-# then open http://localhost:8080
+npm install
+npm run dev          # dev server with hot reload: http://localhost:5173
 ```
 
 Add `?touch=1` to the URL to preview the touch controls on a desktop.
 
+| Command | What it does |
+| --- | --- |
+| `npm run dev` | dev server with hot reload |
+| `npm run build` | production build into `dist/` |
+| `npm run preview` | serve the `dist/` build locally (test offline/PWA here) |
+
+The service worker only registers in production builds, so it never caches
+stale modules while you develop.
+
 ## Deploy
 
-The game is plain static files, so any static host works. Publish the
-repository root.
+`npm run build` produces a static site in `dist/`; any static host works.
 
 | Host | How |
 | --- | --- |
-| **GitHub Pages** | Push to `main`. `.github/workflows/pages.yml` deploys automatically (enable *Settings → Pages → Source: GitHub Actions* once). |
-| **Netlify** | Drag the folder onto app.netlify.com/drop, or connect the repo (`netlify.toml` is included). |
+| **GitHub Pages** | Push to `master`. `.github/workflows/pages.yml` builds and deploys automatically (enable *Settings → Pages → Source: GitHub Actions* once). |
+| **Netlify** | Connect the repo (`netlify.toml` sets the build command and `dist/`), or drag the `dist/` folder onto app.netlify.com/drop. |
 | **Vercel** | `vercel deploy` or import the repo (`vercel.json` is included). |
-| **Any web server** | Copy the folder to the web root. |
+| **Any web server** | Copy the contents of `dist/` to the web root. |
 
-All paths are relative, so it also works from a sub-path such as
+All URLs in the build are relative, so it also works from a sub-path such as
 `username.github.io/lautre/`.
 
-After changing files, bump `VERSION` in `sw.js` so returning players drop the
-old offline cache. The worker fetches from the network first, so updates show
-up straight away when online.
+The build writes its file list and a content-hash cache version into
+`dist/sw.js` (see `vite.config.js`), so returning players get a fresh offline
+cache on every deploy. No version number to bump by hand.
 
 ## Project structure
 
-```
+```text
 index.html              markup: landing, HUD, dialogs, cards, phone, map, pause
-manifest.webmanifest    installable web app metadata
-sw.js                   service worker (offline cache)
-assets/                 icon + social preview image
-css/
-  base.css              tokens, buttons, glass panels, town sign
-  landing.css           landing page
-  hud.css               in-game HUD (responsive grid)
-  overlays.css          dialog, mission cards, phone, map, pause
-  touch.css             joystick + touch buttons
-js/
-  core/      i18n.js (settings + EN/DE), utils.js, state.js (save/load)
+vite.config.js          build config + service-worker precache step
+public/                 copied into the build as-is
+  manifest.webmanifest  installable web app metadata
+  sw.js                 service worker (offline cache)
+  assets/               icon + social preview image
+src/
+  main.js    entry: game loop + boot
+  core/      i18n.js (settings + EN/DE), utils.js, state.js (game state, save/load)
   world/     world.js (map, POIs), traffic-lights.js, vehicles.js
   data/      text.js (dialogue pools), missions.js (chapter 1)
   systems/   missions.js (engine), jobs.js, aerger.js (wanted level),
-             population.js, actions.js, audio.js, update.js (physics, AI)
+             population.js, actions.js, audio.js, music.js, update.js (physics, AI)
   input/     input.js (keyboard, cheats, touch)
   render/    ground, buildings, sprites, effects, maps, render
   ui/        feedback.js (toasts, dialog), phone.js, hud.js, menus.js
-  main.js    game loop + boot
+  styles/    base, landing, hud, overlays, touch (.css)
 archive/                the original single-file version
 ```
 
-Scripts are classic `<script>` tags that share one global scope (so the game
-also runs from `file://`). Load order in `index.html` matters.
+Every file is an ES module that imports what it uses. State that several
+modules change during play (`state`, `clock`, `day`, the active job, Ärger
+level, story progress, camera zoom…) lives on the `game` object exported from
+`src/core/state.js`. A module cannot reassign another module's variables, so
+write `game.clock += dt`, not a new top-level `let`.
 
 ### Adding a mission
 
-Append an entry to `MISSIONS` in `js/data/missions.js`. Step types are `go`,
+Append an entry to `MISSIONS` in `src/data/missions.js`. Step types are `go`,
 `multi` and `collect`. See the comment at the top of that file. Every text is
 written as `L2("English", "Deutsch")`.
 

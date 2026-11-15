@@ -29,21 +29,21 @@
       property="og:description"
       content="New in town, broke, determined. An open-city adventure in your browser."
     />
-    <meta property="og:image" content="assets/og-image.svg" />
-    <link rel="icon" href="assets/icon.svg" type="image/svg+xml" />
-    <link rel="apple-touch-icon" href="assets/icon.svg" />
-    <link rel="manifest" href="manifest.webmanifest" />
+    <meta property="og:image" content="/assets/og-image.svg" />
+    <link rel="icon" href="/assets/icon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/assets/icon.svg" />
+    <link rel="manifest" href="/manifest.webmanifest" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
       rel="stylesheet"
       href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Atkinson+Hyperlegible:wght@400;700&family=IBM+Plex+Mono:wght@500;600&display=swap"
     />
-    <link rel="stylesheet" href="css/base.css" />
-    <link rel="stylesheet" href="css/landing.css" />
-    <link rel="stylesheet" href="css/hud.css" />
-    <link rel="stylesheet" href="css/overlays.css" />
-    <link rel="stylesheet" href="css/touch.css" />
+    <link rel="stylesheet" href="/src/styles/base.css" />
+    <link rel="stylesheet" href="/src/styles/landing.css" />
+    <link rel="stylesheet" href="/src/styles/hud.css" />
+    <link rel="stylesheet" href="/src/styles/overlays.css" />
+    <link rel="stylesheet" href="/src/styles/touch.css" />
   </head>
   <body>
     <canvas id="cv" aria-label="Kaiserslautern city game view"></canvas>
@@ -222,7 +222,7 @@
     <div id="start">
       <header class="topbar">
         <div class="brand">
-          <img src="assets/icon.svg" alt="" width="34" height="34" />
+          <img src="/assets/icon.svg" alt="" width="34" height="34" />
           <span>Lautre</span>
         </div>
         <div class="top-actions">
@@ -324,34 +324,6 @@
       </div>
     </div>
 
-    <!-- Scripts share one global scope and must load in this order. -->
-    <script src="js/core/i18n.js"></script>
-    <script src="js/core/utils.js"></script>
-    <script src="js/world/world.js"></script>
-    <script src="js/world/traffic-lights.js"></script>
-    <script src="js/world/vehicles.js"></script>
-    <script src="js/core/state.js"></script>
-    <script src="js/systems/audio.js"></script>
-    <script src="js/systems/music.js"></script>
-    <script src="js/data/text.js"></script>
-    <script src="js/data/missions.js"></script>
-    <script src="js/systems/missions.js"></script>
-    <script src="js/systems/jobs.js"></script>
-    <script src="js/ui/feedback.js"></script>
-    <script src="js/systems/aerger.js"></script>
-    <script src="js/systems/population.js"></script>
-    <script src="js/systems/actions.js"></script>
-    <script src="js/input/input.js"></script>
-    <script src="js/ui/phone.js"></script>
-    <script src="js/render/ground.js"></script>
-    <script src="js/render/buildings.js"></script>
-    <script src="js/render/sprites.js"></script>
-    <script src="js/render/effects.js"></script>
-    <script src="js/render/maps.js"></script>
-    <script src="js/render/render.js"></script>
-    <script src="js/systems/update.js"></script>
-    <script src="js/ui/hud.js"></script>
-    <script src="js/ui/menus.js"></script>
-    <script src="js/main.js"></script>
+    <script type="module" src="/src/main.js"></script>
   </body>
 </html>
