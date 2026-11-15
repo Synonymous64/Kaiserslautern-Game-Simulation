@@ -14,13 +14,16 @@ export const SETTINGS = (() => {
     sound: true,
     quality: IS_TOUCH ? "low" : "high",
     view: "3d", // "3d" (three.js) or "2d" (classic top-down canvas)
-    camera: "chase", // 3D camera: "chase" (behind), "fpv" (first person) or "top"
+    // 3D camera: "top" (from above), "chase" (behind) or "fpv" (first person).
+    // Phones start from above, computers behind the player.
+    camera: IS_TOUCH ? "top" : "chase",
+    camPicked: false, // true once the player chose a camera themselves
+    camTipShown: false,
   };
   try {
-    return Object.assign(
-      def,
-      JSON.parse(localStorage.getItem(SETTINGS_KEY) || "{}"),
-    );
+    const s = Object.assign({}, def, JSON.parse(localStorage.getItem(SETTINGS_KEY) || "{}"));
+    if (!s.camPicked) s.camera = def.camera; // follow the device default until they choose
+    return s;
   } catch (e) {
     return def;
   }
@@ -138,6 +141,11 @@ export const I18N = {
   music: { en: "Music", de: "Musik" },
   quality: { en: "Graphics", de: "Grafik" },
   view: { en: "View", de: "Ansicht" },
+  rotateHint: {
+    en: "Turn your phone sideways for the best street view",
+    de: "Dreh dein Handy quer – so siehst du die Straße am besten",
+  },
+  rotateGo: { en: "Go landscape", de: "Querformat" },
   qHigh: { en: "High", de: "Hoch" },
   qLow: { en: "Fast", de: "Schnell" },
   on: { en: "On", de: "An" },

@@ -104,6 +104,70 @@
   height: 62px;
 }
 
+/* "turn your phone sideways" card (3D street views in portrait) */
+#rotateHint {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 30;
+  width: min(300px, calc(100vw - 48px));
+  padding: 18px 18px 16px;
+  display: grid;
+  justify-items: center;
+  gap: 12px;
+  text-align: center;
+  font-size: 15px;
+  line-height: 1.35;
+  animation: rhIn 0.3s ease-out;
+}
+#rotateHint[hidden] {
+  display: none;
+}
+#rotateHint p {
+  margin: 0;
+}
+@keyframes rhIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -46%);
+  }
+}
+.rh-phone {
+  width: 34px;
+  height: 56px;
+  border: 3px solid var(--sign);
+  border-radius: 7px;
+  position: relative;
+  animation: rhTurn 1.6s ease-in-out infinite;
+}
+.rh-phone i {
+  position: absolute;
+  left: 50%;
+  bottom: 4px;
+  width: 8px;
+  height: 3px;
+  margin-left: -4px;
+  border-radius: 2px;
+  background: var(--sign);
+}
+@keyframes rhTurn {
+  0%,
+  25% {
+    transform: rotate(0deg);
+  }
+  60%,
+  100% {
+    transform: rotate(-90deg);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .rh-phone {
+    animation: none;
+    transform: rotate(-90deg);
+  }
+}
+
 /* HUD adjustments while touch controls are on */
 body.touch .vehbox {
   left: 50%;

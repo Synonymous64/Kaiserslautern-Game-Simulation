@@ -6,7 +6,7 @@
 import { SETTINGS } from "../core/i18n.js";
 import { clamp, get, MH, MW, ROAD, T, tc, WALK } from "../core/utils.js";
 import { lights } from "../world/world.js";
-import { BLITZER, SIGNALS, signalState } from "../world/traffic-lights.js";
+import { BLITZER, SIGNALS, signalState, STOP_LINE, ZEBRA_IN, ZEBRA_W } from "../world/traffic-lights.js";
 import { vehicles, VT } from "../world/vehicles.js";
 import { game, P, weather } from "../core/state.js";
 import { ctx, H, lctx, rr, W } from "./ground.js";
@@ -186,20 +186,23 @@ export function drawJunctionMarks(l, t, r, b) {
       cy = tc(s.y);
     if (cx < l - 120 || cx > r + 120 || cy < t - 120 || cy > b + 120) continue;
     const H = T * 1.5,
-      S = T * 1.62;
-    // [approach exists?, stop line rect, zebra origin, horizontal zebra?]
+      L = STOP_LINE,
+      Zi = ZEBRA_IN,
+      Zw = ZEBRA_W;
+    // Approaching a junction: stop line (incoming lane only) → zebra → junction.
+    // [approach exists?, stop line rect, zebra start, horizontal zebra?]
     const app = [
-      [get(s.x - 2, s.y) === ROAD, [cx - S - 3, cy, 3, H], cx - S - 32, true],
-      [get(s.x + 2, s.y) === ROAD, [cx + S, cy - H, 3, H], cx + S + 8, true],
-      [get(s.x, s.y - 2) === ROAD, [cx - H, cy - S - 3, H, 3], cy - S - 32, false],
-      [get(s.x, s.y + 2) === ROAD, [cx, cy + S, H, 3], cy + S + 8, false],
+      [get(s.x - 2, s.y) === ROAD, [cx - L - 3, cy, 3, H], cx - Zi - Zw, true],
+      [get(s.x + 2, s.y) === ROAD, [cx + L, cy - H, 3, H], cx + Zi, true],
+      [get(s.x, s.y - 2) === ROAD, [cx - H, cy - L - 3, H, 3], cy - Zi - Zw, false],
+      [get(s.x, s.y + 2) === ROAD, [cx, cy + L, H, 3], cy + Zi, false],
     ];
     for (const [ok, sl, z, hz] of app) {
       if (!ok) continue;
       ctx.fillRect(sl[0], sl[1], sl[2], sl[3]);
       for (let k = -H + 4; k < H - 4; k += 9) {
-        if (hz) ctx.fillRect(z, cy + k, 22, 4.5);
-        else ctx.fillRect(cx + k, z, 4.5, 22);
+        if (hz) ctx.fillRect(z, cy + k, Zw, 4.5);
+        else ctx.fillRect(cx + k, z, 4.5, Zw);
       }
     }
   }

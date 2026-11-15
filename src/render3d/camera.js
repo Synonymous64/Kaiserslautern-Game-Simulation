@@ -69,6 +69,15 @@ export function createCameraRig(camera) {
   addEventListener("pointerup", endDrag);
   addEventListener("pointercancel", endDrag);
 
+  /**
+   * Vertical field of view that still shows at least hMin degrees side to side,
+   * so tall phone screens don't feel zoomed in (capped to avoid fisheye).
+   */
+  const fitFov = (v, hMin) => {
+    const need = (2 * Math.atan(Math.tan((hMin * Math.PI) / 360) / camera.aspect) * 180) / Math.PI;
+    return clamp(need, v, 100);
+  };
+
   /** Is the point inside something the camera must not enter (or see through)? */
   const solid = (x, y, z) => {
     const tx = Math.floor(x / T),
@@ -152,7 +161,7 @@ export function createCameraRig(camera) {
         ez = P.y + Math.sin(P.a) * 2;
         ey = 17.5;
       }
-      camera.fov = 72;
+      camera.fov = fitFov(72, 84);
       camera.near = 0.5;
       camera.far = 3000;
       camera.position.set(ex, ey, ez);
@@ -177,7 +186,7 @@ export function createCameraRig(camera) {
     dist = free < dist ? free : dist + (free - dist) * Math.min(1, dt * 2.5);
     // pulled in by a wall: rise and look down over the player instead of into its head
     const lift = (want - dist) * 0.9;
-    camera.fov = 60;
+    camera.fov = fitFov(60, 76);
     camera.near = 1;
     camera.far = 3200;
     camera.position.set(tx0 - fx * dist, Math.max(3, th + 8 - fy * dist + lift), tz0 - fz * dist);

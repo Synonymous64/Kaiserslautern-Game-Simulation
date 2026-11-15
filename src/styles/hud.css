@@ -381,6 +381,21 @@
     height: 40px;
   }
 }
+/* small phones: five HUD buttons + the status box must fit side by side */
+@media (max-width: 430px) {
+  .hud-btns {
+    gap: 4px;
+  }
+  .icon-btn {
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+  }
+  .icon-btn svg {
+    width: 19px;
+    height: 19px;
+  }
+}
 /* short landscape (phones on their side) */
 @media (max-height: 520px) {
   .hud-top {

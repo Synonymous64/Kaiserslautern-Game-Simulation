@@ -1,6 +1,6 @@
 // Lautre · © 2026 Prajwal Vilas Urkude. All rights reserved.
 // =================== MAIN LOOP ===================
-import { SETTINGS, tx } from "./core/i18n.js";
+import { saveSettings, SETTINGS, tx } from "./core/i18n.js";
 import { $, clamp, T, tc } from "./core/utils.js";
 import { advanceSignals } from "./world/traffic-lights.js";
 import { cam, game, load, P, resetProgress, START_POS } from "./core/state.js";
@@ -146,7 +146,31 @@ export function startGame() {
   cam.x = P.x;
   cam.y = P.y;
   resetHUD();
+  const fresh = !hasSave;
   hasSave = true;
+  // first time in 3D (or a brand-new game): explain the camera + mission buttons
+  const tip =
+    SETTINGS.view === "3d" && (fresh || !SETTINGS.camTipShown)
+      ? [
+          "Lautre",
+          coarse
+            ? L2(
+                "Tip: the camera button at the top right switches the view: from above, behind you, or first person. Drag on the right side of the screen to look around. The flag button shows your current mission.",
+                "Tipp: Der Kamera-Knopf oben rechts wechselt die Ansicht: von oben, hinter dir oder Ego-Perspektive. Rechts auf dem Bildschirm ziehen, um dich umzuschauen. Der Fahnen-Knopf zeigt deine aktuelle Mission.",
+              )
+            : L2(
+                "Tip: press V or the camera button at the top right to switch the view: behind you, first person, or from above. Click the city, then move the mouse to look around. The flag button shows your current mission.",
+                "Tipp: Mit V oder dem Kamera-Knopf oben rechts wechselst du die Ansicht: hinter dir, Ego-Perspektive oder von oben. In die Stadt klicken und die Maus bewegen, um dich umzuschauen. Der Fahnen-Knopf zeigt deine aktuelle Mission.",
+              ),
+        ]
+      : null;
+  if (tip) {
+    SETTINGS.camTipShown = true;
+    saveSettings();
+    const b = $("bCam");
+    b.classList.add("hint-pulse");
+    setTimeout(() => b.classList.remove("hint-pulse"), 12000);
+  }
   if (!welcomed && game.mi < MISSIONS.length) {
     welcomed = true;
     say(
@@ -163,13 +187,15 @@ export function startGame() {
                 "Willkommen in Kaiserslautern, die Einheimischen sagen „Lautre“. WASD zum Bewegen, E zum Einsteigen, P fürs Handy, Esc für Pause.",
               ),
         ],
+        ...(tip ? [tip] : []),
       ],
       () => offerMission(game.mi),
     );
-  } else if (!M && game.mi < MISSIONS.length) {
-    game.nextMissionIn = 1.5;
-  } else if (game.mi >= MISSIONS.length) {
-    toast(tx("Free roam. Phone → Jobs for work, Story to replay missions.", "Freies Spiel. Handy → Jobs für Arbeit, Story für Wiederholungen."));
+  } else {
+    if (tip) say([tip]);
+    if (!M && game.mi < MISSIONS.length) game.nextMissionIn = 1.5;
+    else if (game.mi >= MISSIONS.length)
+      toast(tx("Free roam. Phone → Jobs for work, Story to replay missions.", "Freies Spiel. Handy → Jobs für Arbeit, Story für Wiederholungen."));
   }
 }
 $("play").addEventListener("click", startGame);

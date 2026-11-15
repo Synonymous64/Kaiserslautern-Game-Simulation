@@ -4,7 +4,7 @@ import {
   angDiff, clamp, dist, eur, FOREST, GRASS, PARK, pick, PITCH, PLAZA, ROAD, RUIN, T, tileAtPx,
 } from "../core/utils.js";
 import { edges, nodes } from "../world/world.js";
-import { BLITZER, signalAt, signalNearTile, signalState } from "../world/traffic-lights.js";
+import { BLITZER, signalAt, signalNearTile, signalState, STOP_AT } from "../world/traffic-lights.js";
 import {
   footBlocked, placeAI, unstick, vehBlocked, vehCircles, vehicles, vehOverlap, VT,
 } from "../world/vehicles.js";
@@ -354,7 +354,7 @@ export function updateTraffic(dt) {
     const sig = signalAt.get(toId);
     if (sig && tgtS > 0) {
       const axis = A.y === B.y ? "h" : "v";
-      const toLine = e.len - T * 1.75 - front; // distance to the stop line
+      const toLine = e.len - STOP_AT - front; // distance to the stop line (before the zebra)
       const ls = signalState(sig, axis);
       if (ls !== "green" && toLine > -4 && toLine < 140) {
         // on amber, keep going if too close to stop comfortably

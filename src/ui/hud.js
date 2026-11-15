@@ -20,6 +20,15 @@ const setText = (id, v) => {
   const e = $(id);
   if (e.textContent !== v) e.textContent = v;
 };
+// ---- objective briefing: auto-hide + flag button ----
+const OBJ_SHOW_MS = 7000;
+let objKey = "",
+  objUntil = 0;
+$("bObj").addEventListener("click", () => {
+  objUntil = $("hObj").hidden ? performance.now() + OBJ_SHOW_MS : 0;
+  updateHUD();
+});
+
 /** Refreshes the HUD ten times a second. */
 export function tickHUD(dt) {
   hudT -= dt;
@@ -124,7 +133,19 @@ export function updateHUD() {
     if (live.length) extra.push(el("span", null, live.join(" · ")));
   }
   const O = $("hObj");
-  O.hidden = !title;
+  // the briefing shows for a few seconds when the objective changes, then folds
+  // away; the flag button brings it back. Timed objectives stay up (countdown).
+  const key = kicker + "|" + title;
+  const now = performance.now();
+  if (key !== objKey) {
+    objKey = key;
+    if (title) objUntil = now + OBJ_SHOW_MS;
+  }
+  const showObj = !!title && (now < objUntil || timer !== null);
+  O.hidden = !showObj;
+  const ob = $("bObj");
+  ob.hidden = !title;
+  ob.setAttribute("aria-pressed", String(showObj));
   if (title) {
     setText("hObjK", kicker);
     setText("hObjT", title);

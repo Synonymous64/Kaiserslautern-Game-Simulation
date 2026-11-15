@@ -9,6 +9,12 @@ const SIG_GREEN = 9,
   SIG_ALLRED = 1.3;
 const SIG_HALF = SIG_GREEN + SIG_AMBER + SIG_ALLRED;
 const SIG_CYCLE = SIG_HALF * 2;
+// Road paint at a signal, measured from the junction centre along the road:
+// junction box (±1.5 tiles) → zebra crossing → stop line. Cars wait behind the line.
+export const ZEBRA_IN = T * 1.56; // inner edge of the zebra, just outside the junction
+export const ZEBRA_W = 22;
+export const STOP_LINE = ZEBRA_IN + ZEBRA_W + 4; // stop line, before the zebra
+export const STOP_AT = STOP_LINE + 6; // where a waiting car's bumper stops
 export const SIGNALS = [];
 export const signalAt = new Map(); // node id -> signal
 let sigClock = 0; // real seconds, advanced by the main loop

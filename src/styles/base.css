@@ -189,6 +189,27 @@ body:not(.touch) .touch-only {
 .icon-btn:hover {
   background: var(--panel-hi);
 }
+.icon-btn[aria-pressed="true"] {
+  border-color: var(--sign);
+}
+.icon-btn[aria-pressed="true"] svg {
+  stroke: var(--sign);
+}
+/* draws the eye to a button the first time it matters */
+.icon-btn.hint-pulse {
+  border-color: var(--sign);
+  animation: hintPulse 1.1s ease-in-out infinite;
+}
+@keyframes hintPulse {
+  50% {
+    box-shadow: 0 0 0 6px rgba(242, 194, 48, 0.5);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .icon-btn.hint-pulse {
+    animation: none;
+  }
+}
 
 /* ---------- segmented control ---------- */
 .seg {

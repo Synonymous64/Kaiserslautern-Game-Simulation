@@ -4,7 +4,7 @@
 // transparent overlay for labels, speech bubbles, the objective arrow, rain
 // and colour grading. Loaded on demand (see render/view.js).
 import * as THREE from "three";
-import { SETTINGS, tr } from "../core/i18n.js";
+import { IS_TOUCH, SETTINGS, tr } from "../core/i18n.js";
 import { $, clamp, T, tc } from "../core/utils.js";
 import { POIS, SIGN_SPOTS } from "../world/world.js";
 import { bubbles, cam, camView, game, weather } from "../core/state.js";
@@ -20,6 +20,7 @@ import { createActors } from "./actors.js";
 import { CUT } from "./cutout.js";
 import { createCameraRig } from "./camera.js";
 import { createNav } from "./nav.js";
+import { HUD_SAFE } from "../ui/hud.js";
 
 /** World px → "350 m" / "1.2 km" (same scale as the 2D arrow: one tile = 25 m). */
 const fmtDist = (px) => {
@@ -261,13 +262,16 @@ export async function create3D() {
       const p = project(bb.o.x, 24, bb.o.y);
       if (p) drawBubble(p.x, p.y + 8, tr(bb.text));
     }
+    // street cameras get the compass + pin; from above the edge arrow and beam suffice
+    const street = !top && tg && navInfo;
+    if (street) HUD_SAFE.top = Math.max(HUD_SAFE.top, compassBottom() + 24); // edge arrow stays clear of it
     if (tg) {
       const p = project(tg.x, 0, tg.y);
       if (p) {
         drawObjectiveArrow(tg, q, p.x, p.y, navInfo?.dist);
         // on screen: a waypoint pin with the distance, above the beam
         const pin = project(tg.x, 70, tg.y);
-        if (pin && pin.x > 0 && pin.x < W && pin.y > 0 && pin.y < H) waypointPin(pin.x, pin.y, navInfo ? navInfo.dist : 0);
+        if (street && pin && pin.x > 0 && pin.x < W && pin.y > 0 && pin.y < H) waypointPin(pin.x, pin.y, navInfo.dist);
       } else {
         // behind the camera: point left/right towards it, along the bottom edge
         v.set(tg.x, 0, tg.y).applyMatrix4(camera.matrixWorldInverse);
@@ -275,17 +279,29 @@ export async function create3D() {
       }
     }
     drawGrade();
-    if (tg && navInfo) compass(q, navInfo, tg);
+    if (street) compass(q, navInfo, tg);
   }
+
+  /** Where the compass sits: just below the whole top HUD (it grows while the mission briefing is open). */
+  function compassAt() {
+    const mini = $("mini").getBoundingClientRect(),
+      top = document.querySelector(".hud-top").getBoundingClientRect();
+    if (IS_TOUCH && W > H) {
+      // phone sideways: the thumb buttons own the right edge, so use the top
+      // centre (under the mission briefing while it is open)
+      const obj = $("hObj");
+      const y = obj.hidden ? top.top : obj.getBoundingClientRect().bottom;
+      return { ok: mini.width > 0, cx: W / 2, cy: y + 36 };
+    }
+    return { ok: mini.width > 0, cx: Math.min(mini.left + mini.width / 2, W - 92), cy: top.bottom + 40 };
+  }
+  const compassBottom = () => compassAt().cy + 26 + 40; // dial + distance + name
 
   /** Sat-nav compass under the minimap: which way to go now, how far, where to. */
   function compass(q, nav, tg) {
-    const mini = $("mini").getBoundingClientRect(),
-      col = document.querySelector(".hud-right").getBoundingClientRect();
-    if (!mini.width) return;
-    const cx = mini.left + mini.width / 2,
-      cy = col.bottom + 40,
-      R = 26;
+    const { ok, cx, cy } = compassAt();
+    if (!ok) return;
+    const R = 26;
     const world = Math.atan2(nav.ahead.y - q.y, nav.ahead.x - q.x);
     const a = world - camView.forward - Math.PI / 2; // screen angle (up = where the camera looks)
     ctx.save();
