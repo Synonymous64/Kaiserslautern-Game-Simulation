@@ -45,17 +45,12 @@ stale modules while you develop.
 
 ## Deploy
 
-`npm run build` produces a static site in `dist/`; any static host works.
+The game is hosted on **Vercel**: it builds and deploys from the repo
+(`vercel.json` sets `npm run build` and the `dist/` output). To deploy by
+hand, run `vercel deploy`.
 
-| Host | How |
-| --- | --- |
-| **GitHub Pages** | Push to `master`. `.github/workflows/pages.yml` builds and deploys automatically (enable *Settings → Pages → Source: GitHub Actions* once). |
-| **Netlify** | Connect the repo (`netlify.toml` sets the build command and `dist/`), or drag the `dist/` folder onto app.netlify.com/drop. |
-| **Vercel** | `vercel deploy` or import the repo (`vercel.json` is included). |
-| **Any web server** | Copy the contents of `dist/` to the web root. |
-
-All URLs in the build are relative, so it also works from a sub-path such as
-`username.github.io/lautre/`.
+`npm run build` produces a plain static site in `dist/`, and all URLs in it
+are relative, so it also runs from a sub-path.
 
 The build writes its file list and a content-hash cache version into
 `dist/sw.js` (see `vite.config.js`), so returning players get a fresh offline
