@@ -5,6 +5,8 @@
 const SETTINGS_KEY = "lautre-settings-v1";
 export const IS_TOUCH =
   matchMedia("(pointer: coarse)").matches ||
+  /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent) ||
+  (/Macintosh/.test(navigator.userAgent) && navigator.maxTouchPoints > 1) || // iPadOS reports as a Mac
   /[?&]touch=1/.test(location.search);
 export const SETTINGS = (() => {
   const def = {
@@ -22,7 +24,9 @@ export const SETTINGS = (() => {
   };
   try {
     const s = Object.assign({}, def, JSON.parse(localStorage.getItem(SETTINGS_KEY) || "{}"));
-    if (!s.camPicked) s.camera = def.camera; // follow the device default until they choose
+    // Phones always open from above (a street camera picked last time is not
+    // kept); computers remember the camera the player chose.
+    if (IS_TOUCH || !s.camPicked) s.camera = def.camera;
     return s;
   } catch (e) {
     return def;
